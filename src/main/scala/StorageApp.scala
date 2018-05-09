@@ -41,10 +41,16 @@ object StorageApp extends App {
     ), "parent"))
 
   println(storageUpdated.prettify)
+  println()
+
+  println("=== storage flattened repr ===")
+  storageUpdated.repr.impl.foreach({
+    case (k, v) => println(s"$k -> $v")
+  })
 
   val newStorage = Storage.empty
-    .addDefinition("pathStr", storageUpdated("form1.parent")) // add object definition
-    .addDefinition("pathStr.form1.parent.y", storageUpdated("name")) // add simple definition
+    .addDefinition("x", storageUpdated("form1.parent")) // add object definition
+    .addDefinition("x.form1.parent.y", storageUpdated("name")) // add simple definition
     .addDefinition(storageUpdated("form1")) // add object definition to root
     .addDefinition(storageUpdated("name")) // add to root
 
