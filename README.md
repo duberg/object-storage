@@ -1,0 +1,1 @@
+Akka persistence object storage with fast serialization
