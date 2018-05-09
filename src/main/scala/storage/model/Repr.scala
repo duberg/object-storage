@@ -11,40 +11,17 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     case _ => throw StorageException(s"Invalid path $path")
   }
 
-  /**
-    * - Разбиваем полный путь в список путей
-    * - Группируем по первому элементу списка
-    * - Математическая свертка по группам:
-    *   - Если группа состоит из одного элемента, значит это простой элемент
-    *   - Если группа состоит из больше чем одного элемента значит это объект
-    */
-  private def getComplexDefinition(metadata: Metadata): ComplexDefinition = {
-    val objPath = s"${metadata.path}."
-
-    val objRepr: Map[PathStr, ReprElement] = impl
-      .filterKeys(_ contains objPath)
-      .map({ case (k, v) => (k drop objPath.length, v) })
-
-    val reprPaths: List[ReprPaths] = (List[ReprPaths]() /: objRepr) {
-      case (y, (k, v)) => y :+ ReprPaths(v, k.split("\\.").toList)
-    }
-
-    val obj: ComplexDefinition = metadata match {
-      case x: ObjectMetadata => ObjectDefinition(metadata.name, metadata.description, Map.empty, metadata.path)
-      case x: CollectionMetadata => CollectionDefinition(metadata.name, metadata.description, Map.empty, metadata.path)
-    }
-
-    def groupByHeadPath(x: List[ReprPaths]): Map[PathStr, List[ReprPaths]] = x.groupBy(_.paths.head)
-
-    def traverse(x: List[ReprPaths]): ComplexDefinition = {
-      def acc(obj: ComplexDefinition, group: (PathStr, List[ReprPaths])): ComplexDefinition = {
-        def convert(group: (PathStr, List[ReprPaths])): AnyDefinition = group match {
+  private def traverse[T <: ComplexDefinition](obj: T, x: List[ReprPaths]): T = {
+    def group(x: List[ReprPaths]): Map[PathStr, List[ReprPaths]] = x.groupBy(_.paths.head)
+    def acc(obj: T, group: (PathStr, List[ReprPaths])): T = {
+      def convert(group: (PathStr, List[ReprPaths])): AnyDefinition = {
+        group match {
           // group is simple element
           case (_, ReprPaths(v, _) :: Nil) => v match {
-            case x: BooleanDefinition => x
             case x: IntDefinition => x
-            case x: DecimalDefinition => x
             case x: StringDefinition => x
+            case x: BooleanDefinition => x
+            case x: DecimalDefinition => x
           }
           // group is object element
           case (groupName, groupElements) =>
@@ -53,25 +30,59 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
               .map(_.reprElement)
               .map {
                 case x: ObjectMetadata => getObjectDefinition(x)
-                case x: CollectionMetadata => getCollectionDefinition(x)
+                case x: ArrayMetadata => getArrayDefinition(x)
               }
               .get
         }
-        obj.withDefinition(group._1, convert(group))
       }
-
-      (obj /: groupByHeadPath(x))(acc)
+      obj.withDefinition(group._1, convert(group)).asInstanceOf[T]
     }
 
-    traverse(reprPaths)
+    (obj /: group(x))(acc)
   }
 
-  def getObjectDefinition(metadata: ObjectMetadata): ObjectDefinition = getComplexDefinition(metadata) match {
-    case x: ObjectDefinition => x
+  /**
+    * - Разбиваем полный путь в список путей
+    * - Группируем по первому элементу списка
+    * - Математическая свертка по группам:
+    *   - Если группа состоит из одного элемента, значит это простой элемент
+    *   - Если группа состоит из больше чем одного элемента значит это объект
+    */
+  private def getComplexDefinition(metadata: Metadata): ComplexDefinition = metadata match {
+    case x: ObjectMetadata => getObjectDefinition(x)
+    case x: ArrayMetadata => getArrayDefinition(x)
   }
 
-  private def getCollectionDefinition(metadata: CollectionMetadata): CollectionDefinition = getComplexDefinition(metadata) match {
-    case x: CollectionDefinition => x
+  def getObjectDefinition(metadata: ObjectMetadata): ObjectDefinition = {
+    val objPath = s"${metadata.path}."
+
+    val objRepr: Map[PathStr, ReprElement] = impl
+      .filterKeys(_ contains objPath)
+      .map({ case (k, v) => (k drop objPath.length, v) })
+
+    val reprPaths: List[ReprPaths] = (List[ReprPaths]() /: objRepr) {
+      case (y, (k, v)) => y :+ ReprPaths(v, k.paths)
+    }
+
+    val obj = ObjectDefinition(metadata.name, metadata.description, Map.empty, metadata.path)
+
+    traverse(obj, reprPaths)
+  }
+
+  private def getArrayDefinition(metadata: ArrayMetadata): ArrayDefinition = {
+    val objPath = s"${metadata.path}["
+
+    val objRepr: Map[PathStr, ReprElement] = impl
+      .filterKeys(_ contains objPath)
+      .map({ case (k, v) => (k drop objPath.length - 1, v) })
+
+    val reprPaths: List[ReprPaths] = (List[ReprPaths]() /: objRepr) {
+      case (y, (k, v)) => y :+ ReprPaths(v, k.paths)
+    }
+
+    val obj = ArrayDefinition(metadata.name, metadata.description, Map.empty, metadata.path)
+
+    traverse(obj, reprPaths)
   }
 
   def updateValue(path: PathStr, value: Value, consistency: Consistency = Consistency.Strict): Repr = {
@@ -131,7 +142,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
                   }
                 })
                 copy(impl ++ zImpl)
-              case x: CollectionDefinition => ???
+              case x: ArrayDefinition => ???
             }
         }
       case Consistency.Disabled =>

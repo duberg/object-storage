@@ -1,5 +1,7 @@
 package storage.model
 
+import Implicits._
+
 trait Definition[+T] extends Printable { self =>
   def name: Name
   def description: Description
@@ -17,7 +19,10 @@ trait Definition[+T] extends Printable { self =>
 
 abstract class SimpleDefinition[T <: Value] extends Definition[T] with ReprElement { self =>
   def repr: Repr = Repr(path -> self)
-  def toPrettyString(depth: Int = 0): String = ((" " * 2) * depth) + "|__".yellow + name.red + " -> " + self.toString
+  def toPrettyString(depth: Int = 0, showIndex: Boolean = false): String = {
+    val x = if (showIndex) path.index else path.name
+    ((" " * 2) * depth) + "|__".yellow + x.red + " -> " + self.toString
+  }
   def prettify: String = toPrettyString()
   def withValue(value: Value): SimpleDefinition[T]
   def withDescription(description: Description): SimpleDefinition[T]
@@ -25,10 +30,23 @@ abstract class SimpleDefinition[T <: Value] extends Definition[T] with ReprEleme
 }
 
 trait ComplexDefinition extends Definition[Map[Name, AnyDefinition]] { self =>
-  def toPrettyString(x: Map[Name, AnyDefinition] = value, depth: Int = 0): String = {
+  def toPrettyString(x: List[(Name, AnyDefinition)] = value.toList, depth: Int = 0, showIndex: Boolean = false): String = {
     ("" /: x) {
-      case (k, (_, d: AnySimpleDefinition)) => k + "\n" + d.toPrettyString(depth)
-      case (k, (n, d: ComplexDefinition)) => k + "\n" + ((" " * 2) * depth) + "|__".yellow + n.red + s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(d.value, depth + 1)
+      case (acc, (_, d: AnySimpleDefinition)) =>
+        acc + "\n" + d.toPrettyString(depth, showIndex)
+      case (acc, (n, d: ObjectDefinition)) =>
+        acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.red +
+          s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(d.value.toList, depth + 1)
+      case (acc, (n, d: ArrayDefinition)) =>
+        val y = d.value
+          .map({
+            case (k1, v1) => (v1.path.index , v1)
+          })
+          .toList
+          .sortWith(_._1 < _._1)
+
+        acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.red +
+          s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(y, depth + 1, showIndex = true)
     }
   }
   def prettify: String = toPrettyString()
@@ -116,12 +134,15 @@ case class ObjectDefinition(name: Name, description: Description, value: Map[Nam
   def withDefinition(path: PathStr, definition: AnyDefinition) = copy(value = value + (path -> definition))
 }
 
-case class CollectionDefinition(name: Name, description: Description, value: Map[Name, AnyDefinition], path: PathStr) extends ComplexDefinition { self =>
-  def repr = ???
-  def withValue(value: Map[Name, AnyDefinition]): CollectionDefinition = ???
+case class ArrayDefinition(name: Name, description: Description, value: Map[Name, AnyDefinition], path: PathStr) extends ComplexDefinition { self =>
+  def repr: Repr = {
+    val impl: Map[PathStr, ReprElement] = value.values.flatMap(_.repr.impl).toMap
+    Repr(impl + (path -> ArrayMetadata(name, description, path)))
+  }
+  def withValue(value: Map[Name, AnyDefinition]): ArrayDefinition = ???
   def withValue(value: Value): ObjectDefinition = ???
   def withDescription(description: Description) = copy(description = description)
-  def withPath(path: PathStr): CollectionDefinition = {
+  def withPath(path: PathStr): ArrayDefinition = {
     copy(value = value.mapValues(d => d.withPath(s"$path.${d.path}")), path = path)
   }
   def updated(name: Name, description: Description, value: Map[Name, AnyDefinition]) = ???

@@ -6,7 +6,7 @@ trait TypeChecker {
     val clsY = y.getClass
     (x, y) match {
       case (x: ObjectMetadata, y: ObjectDefinition) =>
-      case (x: CollectionMetadata, y: CollectionDefinition) =>
+      case (x: ArrayMetadata, y: ArrayDefinition) =>
       case _ => if (clsX != clsY) throw StorageException(path, s"Invalid type $clsY, require $clsX")
     }
   }

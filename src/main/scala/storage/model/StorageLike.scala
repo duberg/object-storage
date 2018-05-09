@@ -1,6 +1,8 @@
 package storage.model
 
 trait StorageLike extends Printable { self =>
+  def repr: Repr
+
   def apply(path: Path): AnyDefinition
 
   def apply(path: PathStr): AnyDefinition = apply(Path(path))
