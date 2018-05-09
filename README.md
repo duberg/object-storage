@@ -13,9 +13,10 @@ Akka persistence object storage with fast serialization
     |__title [ObjectDefinition]
       |__en -> StringDefinition(en,None,Title,$.form1.data.title.en)
       |__ru -> StringDefinition(ru,None,+++,$.form1.data.title.ru)
-  |__firstname -> BooleanDefinition(firstname,None,false,$.form1.a)
-  |__files [CollectionDefinition]
-    |__fileA -> IntDefinition(fileA,None,1,$.form1.files.fileA)
-    |__fileB -> IntDefinition(fileB,None,2,$.form1.files.fileB)
+  |__a -> BooleanDefinition(firstname,None,false,$.form1.a)
+  |__files [ArrayDefinition]
+    |__0 -> StringDefinition(file,None,'https://github.com/duberg/object-storage',$.form1.files[0])
+    |__1 -> StringDefinition(file,None,'https://github.com/duberg/object-storage',$.form1.files[1])
+    |__2 -> StringDefinition(file,None,'https://github.com/duberg/object-storage',$.form1.files[2])
   |__lastname -> StringDefinition(lastname,None,lastname,$.form1.lastname)
-|__name -> StringDefinition(name,None,name,$.name)```
+|__name -> StringDefinition(name,None,name,$.name)
