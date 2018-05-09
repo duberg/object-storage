@@ -2,29 +2,31 @@
 import storage.model._
 
 object StorageApp extends App {
-
-  //println(Path("$.form1.files[0]").name)
-
   val storage = Storage(
-    "name" -> StringDefinition("name", None, "name", "name"),
-    "form1" -> ObjectMetadata("form1", None, "form1"),
-    "form1.data" -> ObjectMetadata("data", None, "form1.data"),
-    "form1.data.title" -> ObjectMetadata("title", None, "form1.data.title"),
-    "form1.data.title.ru" -> StringDefinition("ru", None, "Название", "form1.data.title.ru"),
-    "form1.data.title.en" -> StringDefinition("en", None, "Title", "form1.data.title.en"),
-    "form1.a" -> BooleanDefinition("firstname", None, value = false, "form1.firstname"),
-    "form1.parent" -> ObjectMetadata("parent", None, "form1.parent"),
-    "form1.parent.firstname" -> StringDefinition("firstname", None, "firstname", "form1.firstname"),
-    "form1.parent.firstname" -> StringDefinition("firstname", None, "firstname", "form1.parent.firstname"),
-    "form1.parent.lastname" -> StringDefinition("lastname", None, "lastname", "form1.parent.lastname"),
-    "form1.parent.middlename" -> StringDefinition("middlename", None, "middlename", "form1.parent.middlename"),
-    "form1.lastname" -> StringDefinition("lastname", None, "lastname", "form1.lastname"),
-    "form1.middlename" -> StringDefinition("middlename", None, "middlename", "form1.middlename"),
-    "form1.files" -> ArrayMetadata("files", None, "form1.files"),
-    "form1.files[0]" -> StringDefinition("file", None, "'https://github.com/duberg/object-storage'", "form1.files[0]"),
-    "form1.files[2]" -> StringDefinition("file", None, "'https://github.com/duberg/object-storage'", "form1.files[2]"),
-    "form1.files[1]" -> StringDefinition("file", None, "'https://github.com/duberg/object-storage'", "form1.files[1]"),
-    "isEmployee" -> BooleanDefinition("isEmployee", None, value = false, "isEmployee")
+    StringElement(Some("name1"), Some("desc1"), "x", "headPathStr"),
+    ObjectMetadata(Some("name1"), Some("desc1"), "form1"),
+    ObjectMetadata(None, None, "form1.data"),
+    ObjectMetadata(None, None, "form1.data.title"),
+    StringElement(None, None, "title1", "form1.data.title.ru"),
+    StringElement(None, None, "Title", "form1.data.title.en"),
+    BooleanElement(None, None, value = false, "form1.check"),
+    ObjectMetadata(None, None, "form1.parent"),
+    StringElement(None, None, "firstname", "form1.parent.firstname"),
+    StringElement(None, None, "lastname", "form1.parent.lastname"),
+    StringElement(None, None, "middlename", "form1.parent.middlename"),
+    StringElement(None, None, "lastname", "form1.lastname"),
+    StringElement(None, None, "middlename", "form1.middlename"),
+    ArrayMetadata(None, None, "form1.files"),
+    StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[0]"),
+    StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[2]"),
+    StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[1]"),
+    BooleanElement(None, None, value = false, "isEmployee")
+  )
+
+  val obj1 = ObjectElement(
+    StringElement("xx", "parent.firstname"),
+    StringElement("xx", "parent.lastname"),
+    StringElement("xx", "parent.middlename")
   )
 
   val storageUpdated = storage
@@ -33,26 +35,27 @@ object StorageApp extends App {
       "form1.parent.firstname" -> "+++"
     )
     .updateData("isEmployee" -> true)
-    .updateDefinition("form1.parent.middlename", StringDefinition("middlename", Option("sdfsd"), "withValue", "form1.parent.middlename"))
-    .updateDefinition("form1.parent", ObjectDefinition("parent", None, Map(
-      "parent.firstname" -> StringDefinition("firstname", None, "xx", "parent.firstname"),
-      "parent.lastname" -> StringDefinition("lastname", None, "xx", "parent.lastname"),
-      "parent.middlename" -> StringDefinition("middlename", None, "xx", "parent.middlename"),
-    ), "parent"))
+    .updateElement("form1.parent.middlename", StringElement(Some("headPathStr"), Some("desc"), "withValue", "form1.parent.middlename"))
+    .updateElement("form1.parent", obj1)
 
   println(storageUpdated.prettify)
   println()
 
-  println("=== storage flattened repr ===")
+  println("=== storage representation ===")
   storageUpdated.repr.impl.foreach({
     case (k, v) => println(s"$k -> $v")
   })
 
+  val updatedFiles: ArrayElement = storageUpdated
+    .getArrayElement("form1.files")
+   // .addElement(StringElement("newfile", None, "", "newfile"))
+
   val newStorage = Storage.empty
-    .addDefinition("x", storageUpdated("form1.parent")) // add object definition
-    .addDefinition("x.form1.parent.y", storageUpdated("name")) // add simple definition
-    .addDefinition(storageUpdated("form1")) // add object definition to root
-    .addDefinition(storageUpdated("name")) // add to root
+    .addElement("x", storageUpdated("form1.parent")) // add object element
+    .addElement("x.form1.parent.y", storageUpdated("headPathStr")) // add simple element
+    .addElement(storageUpdated("form1")) // add object element to root
+    .addElement(storageUpdated("headPathStr")) // add to root
+    //.updateElement("form1.files", updatedFiles)
 
   println()
   println("=== newStorage ===")

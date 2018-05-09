@@ -4,11 +4,17 @@ import Path._
 
 case class Path(pathStr: PathStr) {
   lazy val paths: Paths = Paths(split(pathStr).map(Path.apply))
-  lazy val name: Name = pathStr.replaceFirst("([^.]+\\.)+", "")
-  lazy val index: String = name.replaceFirst("([^\\[])+\\[", "").head.toString
-  lazy val pathWithoutName: Path = ???
 
-  require(pathStr.nonEmpty)
+  lazy val headPathStr: PathStr = pathStr
+    .replaceFirst("([^.]+\\.)+", "")
+    //.replaceFirst("\\[\\d+\\]", "")
+
+  lazy val index: String = headPathStr
+    .replaceFirst("([^\\[])+\\[", "")
+    .head
+    .toString
+
+  require(pathStr.nonEmpty, "Require non empty path")
 }
 
 object Path {

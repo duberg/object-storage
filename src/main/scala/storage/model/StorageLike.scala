@@ -3,9 +3,9 @@ package storage.model
 trait StorageLike extends Printable { self =>
   def repr: Repr
 
-  def apply(path: Path): AnyDefinition
+  def apply(path: Path): AnyElement
 
-  def apply(path: PathStr): AnyDefinition = apply(Path(path))
+  def apply(path: PathStr): AnyElement = apply(Path(path))
 
   def getBoolean(path: Path): Boolean
 
@@ -15,19 +15,27 @@ trait StorageLike extends Printable { self =>
 
   def getDecimal(path: Path): BigDecimal
 
-  def getDefinition(path: Path): AnyDefinition
+  def getElement(path: Path): AnyElement
+
+  def getComplexElement(path: Path): ComplexElement
+
+  def getObjectElement(path: Path): ObjectElement
+
+  def getArrayElement(path: Path): ArrayElement
+
+  def getArrayElement(path: PathStr): ArrayElement = getArrayElement(Path(path))
 
   def getDataElement(path: Path): DataElement
 
   def getData(paths: Paths): Data
 
-  def updateDefinition(path: Path, definition: AnyDefinition, consistency: Consistency): StorageLike
+  def updateElement(path: Path, definition: AnyElement, consistency: Consistency): StorageLike
 
   def updateDataElement(x: DataElement): StorageLike
 
   def updateData(x: Data): StorageLike
 
-  def addDefinition(path: Path, definition: AnyDefinition): StorageLike = updateDefinition(path, definition, Consistency.Disabled)
+  def addElement(path: Path, definition: AnyElement): StorageLike
 
   def getBoolean(path: PathStr): Boolean = getBoolean(Path(path))
 
@@ -37,7 +45,7 @@ trait StorageLike extends Printable { self =>
 
   def getDecimal(path: PathStr): BigDecimal = getDecimal(Path(path))
 
-  def getDefinition(path: PathStr): AnyDefinition = getDefinition(Path(path))
+  def getElement(path: PathStr): AnyElement = getElement(Path(path))
 
   def getDataElement(path: PathStr): DataElement = getDataElement(Path(path))
 
@@ -49,9 +57,19 @@ trait StorageLike extends Printable { self =>
     case Seq(a, as @ _*) => updateData(Data(x.toMap))
   }
 
-  def updateDefinition(path: PathStr, definition: AnyDefinition, consistency: Consistency = Consistency.Strict): StorageLike = updateDefinition(Path(path), definition, consistency)
+  def addDataElement(x: DataElement): StorageLike
 
-  def addDefinition(path: PathStr, definition: AnyDefinition): StorageLike = addDefinition(Path(path), definition)
+  def addData(x: Data): StorageLike
 
-  def addDefinition(definition: AnyDefinition): StorageLike
+  def addData(x: (PathStr, Value)*): StorageLike = x match {
+    case Seq() => self
+    case Seq((path, value)) => addDataElement(DataElement(path, value))
+    case Seq(a, as @ _*) => addData(Data(x.toMap))
+  }
+
+  def updateElement(path: PathStr, definition: AnyElement, consistency: Consistency = Consistency.Strict): StorageLike = updateElement(Path(path), definition, consistency)
+
+  def addElement(path: PathStr, definition: AnyElement): StorageLike = addElement(Path(path), definition)
+
+  def addElement(definition: AnyElement): StorageLike
 }

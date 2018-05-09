@@ -8,61 +8,75 @@ package storage.model
  *  - Простая и быстрая сериализация данных
  */
 case class Storage(repr: Repr = Repr.empty) extends StorageLike { self =>
-  def apply(path: Path): AnyDefinition = repr(path.pathStr)
+  def apply(path: Path): AnyElement = repr(path.pathStr)
 
   def getBoolean(path: Path): Boolean = repr(path.pathStr) match {
-    case x: BooleanDefinition => x.value
-    case x: StringDefinition => x.value.toBoolean
+    case x: BooleanElement => x.value
+    case x: StringElement => x.value.toBoolean
   }
 
   def getInt(path: Path): Int = repr(path.pathStr) match {
-    case x: IntDefinition => x.value
-    case x: StringDefinition => x.value.toInt
+    case x: IntElement => x.value
+    case x: StringElement => x.value.toInt
   }
 
   def getString(path: Path): String = repr(path.pathStr) match {
-    case x: StringDefinition => x.value
+    case x: StringElement => x.value
     case x => x.toString
   }
 
   def getDecimal(path: Path): BigDecimal = repr(path.pathStr) match {
-    case x: DecimalDefinition => x.value
-    case x: IntDefinition => x.value
-    case x: StringDefinition => x.value.toInt
+    case x: DecimalElement => x.value
+    case x: IntElement => x.value
+    case x: StringElement => x.value.toInt
   }
 
-  def getDefinition(path: Path): AnyDefinition = apply(path)
+  def getElement(path: Path): AnyElement = apply(path)
+
+  def getComplexElement(path: Path): ComplexElement = repr.getComplexElement(repr.getMetadata(path.pathStr))
+
+  def getObjectElement(path: Path): ObjectElement = repr.getObjectElement(repr.getObjectMetadata(path.pathStr))
+
+  def getArrayElement(path: Path): ArrayElement = repr.getArrayElement(repr.getArrayMetadata(path.pathStr))
 
   def getDataElement(path: Path): DataElement = DataElement(path, apply(path).value)
 
   def getData(paths: Paths): Data = Data(paths.map(path => DataElement(path, apply(path).value)).toSet)
 
-  def updateDefinition(path: Path, definition: AnyDefinition, consistency: Consistency): Storage = copy(repr.updateDefinition(path.pathStr, definition, consistency))
+  def updateElement(path: Path, definition: AnyElement, consistency: Consistency): Storage = copy(repr.updateElement(path.pathStr, definition, consistency))
 
   def updateDataElement(x: DataElement): Storage = copy(repr.updateValue(x.path.pathStr, x.value))
 
   def updateData(x: Data): Storage = copy((repr /: x.elements){ case (r, d) => r.updateValue(d.path.pathStr, d.value) })
 
-  def addDefinition(definition: AnyDefinition): Storage = copy(repr.addDefinition(definition))
+  def addElement(definition: AnyElement): Storage = copy(repr.addElement(definition))
+
+  def addElement(path: Path, definition: AnyElement): Storage = copy(repr.addElement(path.pathStr, definition))
 
   def paths: Paths = Paths(repr.impl.keys.toList.map(Path.apply))
 
-  def root: ObjectDefinition = {
+  def root: ObjectElement = {
     val rootImpl = repr.impl.map({ case (path, reprElem) => s"$$.$path" -> reprElem.withPath(s"$$.$path") })
-    val metadata = ObjectMetadata("$", None, "$")
+    val metadata = ObjectMetadata(Some("root"), None, "$")
     val root = Repr(rootImpl + ("$" -> metadata))
-    root.getObjectDefinition(metadata)
+    root.getObjectElement(metadata)
   }
 
   def prettify: String = s"[${getClass.getSimpleName}]".yellow + root.prettify
+
+  def addDataElement(x: DataElement) = ???
+
+  def addData(x: Data) = ???
+
+  repr.impl.foreach({
+    case (path, reprElement) => require(path == reprElement.path, s"Invalid reprElement $reprElement: require same path")
+  })
 }
 
 object Storage {
   def empty: Storage = Storage(Repr.empty)
-
   def apply(x: Map[PathStr, ReprElement]): Storage = Storage(Repr(x))
-
-  def apply(x: (PathStr, ReprElement)*): Storage = Storage(Repr(x.toMap))
+  def apply(x: ReprElement*): Storage = Storage(Repr(x.map(r => r.path -> r).toMap))
 }
 
 case class StorageException(pathStr: PathStr, message: String = "", cause: Option[Exception] = None) extends RuntimeException(message, cause.orNull)

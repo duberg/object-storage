@@ -5,8 +5,8 @@ trait TypeChecker {
     val clsX = x.getClass
     val clsY = y.getClass
     (x, y) match {
-      case (x: ObjectMetadata, y: ObjectDefinition) =>
-      case (x: ArrayMetadata, y: ArrayDefinition) =>
+      case (x: ObjectMetadata, y: ObjectElement) =>
+      case (x: ArrayElement, y: ArrayElement) =>
       case _ => if (clsX != clsY) throw StorageException(path, s"Invalid type $clsY, require $clsX")
     }
   }
