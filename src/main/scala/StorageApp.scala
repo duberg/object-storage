@@ -1,9 +1,11 @@
 
+import io.circe.Printer
 import storage.model._
+import storage.json._
 
 object StorageApp extends App {
   val storage = Storage(
-    StringElement(Some("name1"), Some("desc1"), "x", "headPathStr"),
+    StringElement(Some("name1"), Some("desc1"), "name1", "x1"),
     ObjectMetadata(Some("name1"), Some("desc1"), "form1"),
     ObjectMetadata(None, None, "form1.data"),
     ObjectMetadata(None, None, "form1.data.title"),
@@ -20,7 +22,7 @@ object StorageApp extends App {
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[0]"),
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[2]"),
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[1]"),
-    BooleanElement(None, None, value = false, "isEmployee")
+    BooleanElement(value = false, "isEmployee")
   )
 
   val obj1 = ObjectElement(
@@ -35,9 +37,11 @@ object StorageApp extends App {
       "form1.parent.firstname" -> "+++"
     )
     .updateData("isEmployee" -> true)
-    .updateElement("form1.parent.middlename", StringElement(Some("headPathStr"), Some("desc"), "withValue", "form1.parent.middlename"))
+    .updateElement("form1.parent.middlename", StringElement(Some("name"), Some("desc"), "m", "form1.parent.middlename"))
     .updateElement("form1.parent", obj1)
 
+  implicit val printer: Printer = Printer.noSpaces
+  println(storageUpdated.asInstanceOf[Storage].root.asJson)
   println(storageUpdated.prettify)
   println()
 
@@ -52,9 +56,9 @@ object StorageApp extends App {
 
   val newStorage = Storage.empty
     .addElement("x", storageUpdated("form1.parent")) // add object element
-    .addElement("x.form1.parent.y", storageUpdated("headPathStr")) // add simple element
+    .addElement("x.form1.parent.y", storageUpdated("x1")) // add simple element
     .addElement(storageUpdated("form1")) // add object element to root
-    .addElement(storageUpdated("headPathStr")) // add to root
+    .addElement(storageUpdated("x1")) // add to root
     //.updateElement("form1.files", updatedFiles)
 
   println()

@@ -8,6 +8,7 @@ package object model {
   type AnySimpleElement = SimpleElement[Value]
   type AnyElement = StorageElement[Value]
   type AnyElements = Map[PathStr, AnyElement]
+  type ReprElements = Map[PathStr, ReprElement]
 
   object PathOpt {
 

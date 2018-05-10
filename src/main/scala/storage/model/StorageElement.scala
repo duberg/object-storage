@@ -57,53 +57,42 @@ trait ComplexElement extends StorageElement[AnyElements] { self =>
 }
 
 case class BooleanElement(name: Name, description: Description, value: Boolean, path: PathStr) extends SimpleElement[Boolean] { self =>
-  def convert: PartialFunction[Value, Boolean] = {
-    case v: Boolean => v
-    case v: String => v.toBoolean
-    case v => throw StorageException(path, s"$v cannot be converted to boolean")
-  }
-  def withValue(x: Value) = copy(value = convert(x))
+  def withValue(x: Value) = copy(value = convert(x, path))
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: PathStr) = copy(path = path)
-  def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value))
+  def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value, path))
 }
 
 object BooleanElement {
-  def apply(value: Boolean, path: PathStr): BooleanElement = apply(None, None, value, path)
+  val typeName = "BooleanElement"
+
+  def apply(value: Boolean, path: PathStr): BooleanElement = BooleanElement(None, None, value, path)
 }
 
 case class IntElement(name: Name, description: Description, value: Int, path: PathStr) extends SimpleElement[Int] { self =>
-  def convert: PartialFunction[Value, Int] = {
-    case v: Int => v
-    case v: BigDecimal => v.toInt
-    case v: String => v.toInt
-    case v => throw StorageException(path, s"$v cannot be converted to int")
-  }
-  def withValue(x: Value) = copy(value = convert(x))
+  def withValue(x: Value) = copy(value = convert(x, path))
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: PathStr) = copy(path = path)
-  def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value))
+  def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value, path))
 }
 
 object IntElement {
-  def apply(value: Int, path: PathStr): IntElement = apply(None, None, value, path)
+  val typeName = "IntElement"
+
+  def apply(value: Int, path: PathStr): IntElement = IntElement(None, None, value, path)
 }
 
 case class DecimalElement(name: Name, description: Description, value: BigDecimal, path: PathStr) extends SimpleElement[BigDecimal] { self =>
-  def convert: PartialFunction[Value, BigDecimal] = {
-    case v: BigDecimal => v
-    case v: String => BigDecimal(v)
-    case v: Int => BigDecimal(v)
-    case v => throw StorageException(path, s"$v cannot be converted to decimal")
-  }
-  def withValue(x: Value) = copy(value = convert(x))
+  def withValue(x: Value) = copy(value = convert(x, path))
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: PathStr) = copy(path = path)
-  def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value))
+  def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value, path))
 }
 
 object DecimalElement {
-  def apply(value: BigDecimal, path: PathStr): DecimalElement = apply(None, None, value, path)
+  val typeName = "DecimalElement"
+
+  def apply(value: BigDecimal, path: PathStr): DecimalElement = DecimalElement(None, None, value, path)
 }
 
 case class StringElement(name: Name, description: Description, value: String, path: PathStr) extends SimpleElement[String] { self =>
@@ -114,7 +103,9 @@ case class StringElement(name: Name, description: Description, value: String, pa
 }
 
 object StringElement {
-  def apply(value: String, path: PathStr): StringElement = apply(None, None, value, path)
+  val typeName = "StringElement"
+
+  def apply(value: String, path: PathStr): StringElement = StringElement(None, None, value, path)
 }
 
 case class ObjectElement(name: Name, description: Description, value: AnyElements, path: PathStr) extends ComplexElement { self =>
@@ -153,6 +144,8 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
 }
 
 object ObjectElement {
+  val typeName = "ObjectElement"
+
   def apply(value: AnyElements, path: PathStr): ObjectElement = apply(None, None, value, path)
   def apply(x: AnyElement*): ObjectElement = {
     // todo: check paths
@@ -180,5 +173,7 @@ case class ArrayElement(name: Name, description: Description, value: AnyElements
 }
 
 object ArrayElement {
+  val typeName = "ArrayElement"
+
   def apply(value: AnyElements, path: PathStr): ArrayElement = apply(None, None, value, path)
 }

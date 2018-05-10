@@ -1,9 +1,9 @@
 # Akka persistence object storage with fast serialization
 
 **Json object**
-```json
+```storage.json
 {
-   "name": id,
+   "name": "name",
    "form1" : {
      "lastname": "lastname",
      "parent": {
