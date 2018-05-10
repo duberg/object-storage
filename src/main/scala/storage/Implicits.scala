@@ -1,6 +1,6 @@
-package storage.model
+package storage
 
-import Path._
+import storage.Path._
 
 object Implicits {
   implicit class PathStrOps(x: PathStr) {

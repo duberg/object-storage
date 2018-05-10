@@ -1,4 +1,4 @@
-package storage.model
+package storage
 
 import Implicits._
 
@@ -11,7 +11,7 @@ trait StorageElement[+T] extends Printable { self =>
   def withValue(value: Value): AnyElement
   def withDescription(description: Description): AnyElement
   def withPath(path: PathStr): AnyElement
-  def isSimple: Boolean =  self match {
+  def isSimple: Boolean = self match {
     case _: AnySimpleElement @unchecked => true
     case _: ComplexElement => false
   }
@@ -40,7 +40,7 @@ trait ComplexElement extends StorageElement[AnyElements] { self =>
       case (acc, (n, d: ArrayElement)) =>
         val y = d.value
           .map({
-            case (k1, v1) => (v1.path.index , v1)
+            case (k1, v1) => (v1.path.index, v1)
           })
           .toList
           .sortWith(_._1 < _._1)
@@ -115,19 +115,19 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
   }
 
   //  def updateValue(reprElem: Value): ObjectElement = reprElem match {
-//    case v: AnySimpleElement =>
-//      pathStr.get(v.headPathStr) match {
-//        case Some(d: AnySimpleElement) => copy(
-//          description = v.description,
-//          pathStr = pathStr + (d.headPathStr -> d.updateValue(v.pathStr)))
-//        case _ => throw Exception
-//      }
-//    case v: ObjectElement =>
-//      copy(
-//        description = v.description,
-//        pathStr = pathStr.merge(v.pathStr))
-//    case _ => throw Exception
-//  }
+  //    case v: AnySimpleElement =>
+  //      pathStr.get(v.headPathStr) match {
+  //        case Some(d: AnySimpleElement) => copy(
+  //          description = v.description,
+  //          pathStr = pathStr + (d.headPathStr -> d.updateValue(v.pathStr)))
+  //        case _ => throw Exception
+  //      }
+  //    case v: ObjectElement =>
+  //      copy(
+  //        description = v.description,
+  //        pathStr = pathStr.merge(v.pathStr))
+  //    case _ => throw Exception
+  //  }
   def withValue(value: AnyElements): ObjectElement = ???
   def withValue(value: Value): ObjectElement = ???
   def withDescription(description: Description) = copy(description = description)
@@ -135,8 +135,7 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
     // !!! headPathStr
     copy(
       value = value.mapValues(d => d.withPath(s"$path.${d.path}")),
-      path = s"$path.${this.path}"
-    )
+      path = s"$path.${this.path}")
   }
   def updated(name: Name, description: Description, value: AnyElements) = ???
   def withElement(path: PathStr, definition: AnyElement) = copy(value = value + (path -> definition))

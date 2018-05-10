@@ -1,4 +1,4 @@
-package storage.model
+package storage
 
 trait Printable {
   def prettify: String

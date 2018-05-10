@@ -1,4 +1,4 @@
-package storage.model
+package storage
 
 case class DataElement(path: Path, value: Value)
 

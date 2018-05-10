@@ -1,6 +1,4 @@
-package storage
-
-package object model {
+package object storage {
   type Name = Option[String]
   type Description = Option[String]
   type Value = Any

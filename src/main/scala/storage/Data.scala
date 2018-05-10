@@ -1,4 +1,4 @@
-package storage.model
+package storage
 
 case class Data(elements: Set[DataElement]) {
   def apply(path: Path): Value = elements

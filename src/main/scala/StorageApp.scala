@@ -1,6 +1,6 @@
 
 import io.circe.Printer
-import storage.model._
+import storage._
 import storage.json._
 
 object StorageApp extends App {
@@ -22,20 +22,17 @@ object StorageApp extends App {
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[0]"),
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[2]"),
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[1]"),
-    BooleanElement(value = false, "isEmployee")
-  )
+    BooleanElement(value = false, "isEmployee"))
 
   val obj1 = ObjectElement(
     StringElement("xx", "parent.firstname"),
     StringElement("xx", "parent.lastname"),
-    StringElement("xx", "parent.middlename")
-  )
+    StringElement("xx", "parent.middlename"))
 
   val storageUpdated = storage
     .updateData(
       "form1.data.title.ru" -> "+++",
-      "form1.parent.firstname" -> "+++"
-    )
+      "form1.parent.firstname" -> "+++")
     .updateData("isEmployee" -> true)
     .updateElement("form1.parent.middlename", StringElement(Some("name"), Some("desc"), "m", "form1.parent.middlename"))
     .updateElement("form1.parent", obj1)
@@ -51,14 +48,14 @@ object StorageApp extends App {
 
   val updatedFiles: ArrayElement = storageUpdated
     .getArrayElement("form1.files")
-   // .addElement(StringElement("newfile", None, "", "newfile"))
+  // .addElement(StringElement("newfile", None, "", "newfile"))
 
   val newStorage = Storage.empty
     .addElement("x", storageUpdated("form1.parent")) // add object element
     .addElement("x.form1.parent.y", storageUpdated("x1")) // add simple element
     .addElement(storageUpdated("form1")) // add object element to root
     .addElement(storageUpdated("x1")) // add to root
-    //.updateElement("form1.files", updatedFiles)
+  //.updateElement("form1.files", updatedFiles)
 
   println()
   println("=== newStorage ===")

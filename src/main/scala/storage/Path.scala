@@ -1,13 +1,13 @@
-package storage.model
+package storage
 
-import Path._
+import storage.Path._
 
 case class Path(pathStr: PathStr) {
   lazy val paths: Paths = Paths(split(pathStr).map(Path.apply))
 
   lazy val headPathStr: PathStr = pathStr
     .replaceFirst("([^.]+\\.)+", "")
-    //.replaceFirst("\\[\\d+\\]", "")
+  //.replaceFirst("\\[\\d+\\]", "")
 
   lazy val index: String = headPathStr
     .replaceFirst("([^\\[])+\\[", "")
