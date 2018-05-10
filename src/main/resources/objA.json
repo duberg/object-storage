@@ -1,0 +1,89 @@
+{
+  "isEmployee" : {
+    "value" : true,
+    "path" : "$.isEmployee",
+    "type" : "BooleanElement"
+  },
+  "form1" : {
+    "name" : "name1",
+    "description" : "desc1",
+    "value" : {
+      "parent" : {
+        "lastname" : {
+          "value" : "xx",
+          "path" : "$.form1.parent.lastname",
+          "type" : "StringElement"
+        },
+        "firstname" : {
+          "value" : "xx",
+          "path" : "$.form1.parent.firstname",
+          "type" : "StringElement"
+        },
+        "middlename" : {
+          "value" : "xx",
+          "path" : "$.form1.parent.middlename",
+          "type" : "StringElement"
+        }
+      },
+      "middlename" : {
+        "value" : "middlename",
+        "path" : "$.form1.middlename",
+        "type" : "StringElement"
+      },
+      "data" : {
+        "title" : {
+          "value" : {
+            "en" : {
+              "value" : "Title",
+              "path" : "$.form1.data.title.en",
+              "type" : "StringElement"
+            },
+            "ru" : {
+              "value" : "+++",
+              "path" : "$.form1.data.title.ru",
+              "type" : "StringElement"
+            }
+          },
+          "path" : "$.form1.data.title",
+          "type" : "ObjectElement"
+        }
+      },
+      "files" : {
+        "[0]" : {
+          "value" : "'https://github.com/duberg/object-storage'",
+          "path" : "$.form1.files[0]",
+          "type" : "StringElement"
+        },
+        "[2]" : {
+          "value" : "'https://github.com/duberg/object-storage'",
+          "path" : "$.form1.files[2]",
+          "type" : "StringElement"
+        },
+        "[1]" : {
+          "value" : "'https://github.com/duberg/object-storage'",
+          "path" : "$.form1.files[1]",
+          "type" : "StringElement"
+        }
+      },
+      "lastname" : {
+        "value" : "lastname",
+        "path" : "$.form1.lastname",
+        "type" : "StringElement"
+      },
+      "check" : {
+        "value" : false,
+        "path" : "$.form1.check",
+        "type" : "BooleanElement"
+      }
+    },
+    "path" : "$.form1",
+    "type" : "ObjectElement"
+  },
+  "x1" : {
+    "name" : "name1",
+    "description" : "desc1",
+    "value" : "name1",
+    "path" : "$.x1",
+    "type" : "StringElement"
+  }
+}

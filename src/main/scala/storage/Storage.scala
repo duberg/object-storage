@@ -1,13 +1,13 @@
 package storage
 
 /**
- * = Хранилище определений =
+ * = Object storage =
  *
- *  - Согласованные данные
- *  - Быстрые операции чтения и записи
- *  - Простая и быстрая сериализация данных
+ *  - Data consistency
+ *  - Fast read and write
+ *  - Fast akka persistence serialization
  */
-case class Storage(repr: Repr = Repr.empty) extends StorageLike { self =>
+case class Storage(repr: Repr = Repr.empty) extends StorageLike {
   def apply(path: Path): AnyElement = repr(path.pathStr)
 
   def getBoolean(path: Path): Boolean = repr(path.pathStr) match {
@@ -49,7 +49,13 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike { self =>
 
   def updateData(x: Data): Storage = copy((repr /: x.elements) { case (r, d) => r.updateValue(d.path.pathStr, d.value) })
 
-  def addElement(definition: AnyElement): Storage = copy(repr.addElement(definition))
+  def updateData(x: (PathStr, Value)*): Storage = x match {
+    case Seq() => this
+    case Seq((path, value)) => updateDataElement(DataElement(path, value))
+    case Seq(a, as @ _*) => updateData(Data(x.toMap))
+  }
+
+  def addElement(x: AnyElement): Storage = copy(repr.addElement(x))
 
   def addElement(path: Path, definition: AnyElement): Storage = copy(repr.addElement(path.pathStr, definition))
 
@@ -64,9 +70,19 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike { self =>
 
   def prettify: String = s"[${getClass.getSimpleName}]".yellow + root.prettify
 
+  def updateElement(path: PathStr, x: AnyElement, consistency: Consistency = Consistency.Strict): Storage = updateElement(Path(path), x, consistency)
+
+  def addElement(path: PathStr, x: AnyElement): StorageLike = addElement(Path(path), x)
+
   def addDataElement(x: DataElement) = ???
 
   def addData(x: Data) = ???
+
+  def addData(x: (PathStr, Value)*): StorageLike = x match {
+    case Seq() => this
+    case Seq((path, value)) => addDataElement(DataElement(path, value))
+    case Seq(a, as @ _*) => addData(Data(x.toMap))
+  }
 
   repr.impl.foreach({
     case (path, reprElement) => require(path == reprElement.path, s"Invalid reprElement $reprElement: require same path")

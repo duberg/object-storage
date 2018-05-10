@@ -38,8 +38,7 @@ trait Codec {
     }
   }
 
-  implicit val encodeStorage: Encoder[Storage] =
-    (x: Storage) => Json.obj(("Storage", x.repr.asJson))
+  implicit val encodeStorage: Encoder[Storage] = (x: Storage) => x.root.value.asJson
 
   //  implicit val decodeStorage: Decoder[Storage] =
   //    (c: HCursor) => for (x <- c.downField("repr").as[Repr]) yield Storage(x)
@@ -51,8 +50,8 @@ trait Codec {
     case x: Metadata => x.asJson
   }
 
-  implicit val encodeReprElements: Encoder[ReprElements] = (x: ReprElements) => Json.obj(
-    x.mapValues(_.asJson).toSeq: _*)
+//  implicit val encodeReprElements: Encoder[ReprElements] = (x: ReprElements) => Json.obj(
+//    x.mapValues(_.asJson).toSeq: _*)
 
   implicit val encodeAnyElements: Encoder[AnyElements] = (x: AnyElements) => Json.obj(
     x.mapValues(_.asJson).toSeq: _*)
@@ -157,8 +156,17 @@ trait Codec {
     value <- c.downField("value").as[Any]
   } yield DataElement(path, value)
 
-  implicit val encodeObjectElement: Encoder[ObjectElement] =
-    (x: ObjectElement) => Json.obj(x.value.mapValues(_.asJson).toSeq: _*)
+//  implicit val decodeObjectElement: Decoder[DataElement] = (c: HCursor) => for {
+//    path <- c.downField("path").as[String]
+//    value <- c.downField("value").as[Any]
+//  } yield DataElement(path, value)
+
+  implicit val encodeObjectElement: Encoder[ObjectElement] = (x: ObjectElement) => Json.obj(
+    ("name", x.name.asJson),
+    ("description", x.description.asJson),
+    ("value", x.value.asJson),
+    ("path", x.path.asJson),
+    ("type", ObjectElement.typeName.asJson))
 
   implicit val encodeArrayElement: Encoder[ArrayElement] =
     (x: ArrayElement) => Json.obj(x.value.mapValues(_.asJson).toSeq: _*)
