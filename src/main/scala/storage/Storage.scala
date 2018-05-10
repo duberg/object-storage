@@ -61,12 +61,7 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def paths: Paths = Paths(repr.impl.keys.toList.map(Path.apply))
 
-  def root: ObjectElement = {
-    val rootImpl = repr.impl.map({ case (path, reprElem) => s"$$.$path" -> reprElem.withPath(s"$$.$path") })
-    val metadata = ObjectMetadata(Some("root"), None, "$")
-    val root = storage.Repr(rootImpl + ("$" -> metadata))
-    root.getObjectElement(metadata)
-  }
+  def root: ObjectElement = repr.root
 
   def prettify: String = s"[${getClass.getSimpleName}]".yellow + root.prettify
 

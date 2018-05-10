@@ -15,6 +15,8 @@ case class Path(pathStr: PathStr) {
     .toString
 
   require(pathStr.nonEmpty, "Require non empty path")
+
+  def isRoot: Boolean = pathStr == "$"
 }
 
 object Path {

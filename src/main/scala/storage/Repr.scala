@@ -78,15 +78,15 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
   }
 
   def getObjectElement(metadata: ObjectMetadata): ObjectElement = {
-    val objPath = s"${metadata.path}."
+      val objPath = s"${metadata.path}."
 
-    val objRepr: Map[PathStr, ReprElement] = impl
-      .filterKeys(_ contains objPath)
-      .map({ case (k, v) => (k drop objPath.length, v) })
+      val objRepr: Map[PathStr, ReprElement] = impl
+        .filterKeys(_ contains objPath)
+        .map({ case (k, v) => (k drop objPath.length, v) })
 
-    val reprPaths: List[ReprPaths] = (List[ReprPaths]() /: objRepr) {
-      case (y, (k, v)) => y :+ ReprPaths(v, k.paths)
-    }
+      val reprPaths = (List[ReprPaths]() /: objRepr) {
+        case (y, (k, v)) => y :+ ReprPaths(v, k.paths)
+      }
 
     val obj = ObjectElement(metadata.name, metadata.description, Map[PathStr, AnyElement](), metadata.path)
 
@@ -244,6 +244,19 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     // merge maps
     copy(impl ++ definitionImpl ++ metadataObjsImpl)
   }
+
+  def rootMetadata = ObjectMetadata(Some("root"), None, "$")
+
+  def withRootMetadata: Repr = {
+    val objImpl = impl.map({
+      case (k, v) =>
+        val p = s"$$.$k"
+        (p, v.withPath(p))
+    })
+    copy(objImpl + (rootMetadata.path -> rootMetadata))
+  }
+
+  def root: ObjectElement = withRootMetadata.getObjectElement(rootMetadata)
 }
 
 object Repr {

@@ -7,6 +7,7 @@ object Implicits {
     def paths: List[PathStr] = split(x)
     def headPathStr: PathStr = Path(x).headPathStr
     def index: String = Path(x).index
+    def isRoot: Boolean = Path(x).isRoot
   }
 
   implicit def anyToString(x: Any): String = x.toString

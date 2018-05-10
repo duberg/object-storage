@@ -135,7 +135,7 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
     // !!! headPathStr
     copy(
       value = value.mapValues(d => d.withPath(s"$path.${d.path}")),
-      path = s"$path.${this.path}")
+      path = path)
   }
   def updated(name: Name, description: Description, value: AnyElements) = ???
   def withElement(path: PathStr, definition: AnyElement) = copy(value = value + (path -> definition))
