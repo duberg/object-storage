@@ -40,8 +40,7 @@ object StorageApp extends App {
     .updateElement("form1.parent.middlename", StringElement(Some("name"), Some("desc"), "m", "form1.parent.middlename"))
     .updateElement("form1.parent", obj1)
 
-  implicit val printer: Printer = Printer.noSpaces
-  println(storageUpdated.asInstanceOf[Storage].root.asJson)
+  println(storageUpdated.asInstanceOf[Storage].root.asJsonStr)
   println(storageUpdated.prettify)
   println()
 
