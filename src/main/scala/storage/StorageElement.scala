@@ -4,32 +4,25 @@ import Implicits._
 
 trait StorageElement[+T] extends Printable { self =>
   def name: Name
-
   def description: Description
-
   def value: T
-
   def repr: Repr
-
   def path: PathStr
-
   def withValue(value: Value): AnyElement
-
   def withDescription(description: Description): AnyElement
-
   def withPath(path: PathStr): AnyElement
-
   def isSimple: Boolean = self match {
     case _: AnySimpleElement @unchecked => true
     case _: ComplexElement => false
   }
+  def isArrayElement: Boolean = path.isArrayElementPath
 }
 
 abstract class SimpleElement[+T <: Value] extends StorageElement[T] with ReprElement { self =>
   def repr: Repr = Repr(path -> self)
-  def toPrettyString(depth: Int = 0, showIndex: Boolean = false): String = {
-    val x = if (showIndex) path.index else path.name
-    ((" " * 2) * depth) + "|__".yellow + x.red + " -> " + self.toString
+  def toPrettyString(depth: Int = 0): String = {
+    val x = if (isArrayElement) "" else path.name.red
+    ((" " * 2) * depth) + "|__".yellow + x + " -> " + self.toString
   }
   def prettify: String = toPrettyString()
   def withValue(value: Value): SimpleElement[T]
@@ -38,23 +31,23 @@ abstract class SimpleElement[+T <: Value] extends StorageElement[T] with ReprEle
 }
 
 trait ComplexElement extends StorageElement[AnyElements] { self =>
-  def toPrettyString(x: List[(PathStr, AnyElement)] = value.toList, depth: Int = 0, showIndex: Boolean = false): String = {
+  def toPrettyString(x: List[(PathStr, AnyElement)] = value.toList, depth: Int = 0): String = {
     ("" /: x) {
       case (acc, (_, d: AnySimpleElement)) =>
-        acc + "\n" + d.toPrettyString(depth, showIndex)
+        acc + "\n" + d.toPrettyString(depth)
       case (acc, (n, d: ObjectElement)) =>
         acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.red +
           s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(d.value.toList, depth + 1)
       case (acc, (n, d: ArrayElement)) =>
         val y = d.value
           .map({
-            case (k1, v1) => (v1.path.index, v1)
+            case (k1, v1) => (v1.path.name, v1)
           })
           .toList
           .sortWith(_._1 < _._1)
 
         acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.red +
-          s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(y, depth + 1, showIndex = true)
+          s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(y, depth + 1)
       case (acc, (n, d: Ref)) =>
         acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.blue +
           s" ->".blue + toPrettyString(List((d.ref, d.value)), depth + 1)
@@ -191,10 +184,9 @@ object ArrayElement {
 case class Ref(name: Name, description: Description, value: AnyElement, ref: PathStr, path: PathStr) extends StorageElement[AnyElement] {
   def repr = Repr(path -> RefMetadata(name, description, ref, path))
 
-  def toPrettyString(depth: Int = 0, showIndex: Boolean = false): String = {
-    val x = if (showIndex) path.index else path.name
-    ((" " * 2) * depth) + "|__".blue + x.blue + " -> " + value.prettify
-  }
+  def toPrettyString(depth: Int = 0): String =
+    ((" " * 2) * depth) + "|__".blue + path.name.blue + " -> " + value.prettify
+
   def prettify: String = toPrettyString()
 
   def withValue(value: AnyElements) = ???

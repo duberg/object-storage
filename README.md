@@ -148,7 +148,9 @@
       |__en -> StringElement(None,None,Title,$.form1.data.title.en)
       |__ru -> StringElement(None,None,+++,$.form1.data.title.ru)
   |__files [ArrayElement]
-    |__[ -> StringElement(None,None,https://github.com/duberg/object-storage,$.form1.files[1])
+    |__ -> StringElement(None,None,https://github.com/duberg/object-storage,$.form1.files[0])
+    |__ -> StringElement(None,None,https://github.com/duberg/object-storage,$.form1.files[1])
+    |__ -> StringElement(None,None,https://github.com/duberg/object-storage,$.form1.files[2])
   |__lastname -> StringElement(None,None,lastname,$.form1.lastname)
   |__check -> BooleanElement(None,None,false,$.form1.check)
 |__x1 -> StringElement(Some(name1),Some(desc1),name1,$.x1)

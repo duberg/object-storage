@@ -6,8 +6,8 @@ object Implicits {
   implicit class PathStrOps(x: PathStr) {
     def name: PathStr = paths.last
     def paths: List[PathStr] = split(x)
-    def index: String = Path(x).index
     def isRoot: Boolean = Path(x).isRoot
+    def isArrayElementPath: Boolean = Path(x).isArrayElementPath
   }
 
   implicit def anyToString(x: Any): String = x.toString

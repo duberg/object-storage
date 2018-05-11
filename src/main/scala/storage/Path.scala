@@ -5,17 +5,14 @@ import storage.Path._
 case class Path(pathStr: PathStr) {
   def name: String = paths.last.pathStr
   def paths: Paths = Paths(split(pathStr).map(Path.apply))
-  def index: String = name
-    .replaceFirst("([^\\[])+\\[", "")
-    .head
-    .toString
   def isRoot: Boolean = pathStr == "$"
+  def isArrayElementPath: Boolean = name.matches("^\\[\\d+\\]$")
 
   require(pathStr.nonEmpty, "Require non empty path")
 }
 
 object Path {
-  val ArrayElementPattern = "^(.+)(\\[\\d\\])$".r
+  val ArrayElementPattern = "^(.+)(\\[\\d+\\])$".r
 
   def split(pathStr: PathStr): List[PathStr] = {
     pathStr.split("\\.")
