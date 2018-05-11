@@ -21,6 +21,8 @@ object StorageApp extends App {
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[0]"),
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[2]"),
     StringElement(None, None, "'https://github.com/duberg/object-storage'", "form1.files[1]"),
+    // reference example
+    RefMetadata(None, Option("Reference to parent object"), "form1.parent", "form1.parent2"),
     BooleanElement(value = false, "isEmployee"))
 
   val obj1 = ObjectElement(

@@ -4,20 +4,28 @@ import Implicits._
 
 trait StorageElement[+T] extends Printable { self =>
   def name: Name
+
   def description: Description
+
   def value: T
-  def path: PathStr
+
   def repr: Repr
+
+  def path: PathStr
+
   def withValue(value: Value): AnyElement
+
   def withDescription(description: Description): AnyElement
+
   def withPath(path: PathStr): AnyElement
+
   def isSimple: Boolean = self match {
     case _: AnySimpleElement @unchecked => true
     case _: ComplexElement => false
   }
 }
 
-abstract class SimpleElement[T <: Value] extends StorageElement[T] with ReprElement { self =>
+abstract class SimpleElement[+T <: Value] extends StorageElement[T] with ReprElement { self =>
   def repr: Repr = Repr(path -> self)
   def toPrettyString(depth: Int = 0, showIndex: Boolean = false): String = {
     val x = if (showIndex) path.index else path.name
@@ -47,6 +55,9 @@ trait ComplexElement extends StorageElement[AnyElements] { self =>
 
         acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.red +
           s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(y, depth + 1, showIndex = true)
+      case (acc, (n, d: Ref)) =>
+        acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.blue +
+          s" [${d.getClass.getSimpleName}]".blue + toPrettyString(List((d.ref, d.value)), depth + 1)
     }
   }
   def prettify: String = toPrettyString()
@@ -175,4 +186,26 @@ object ArrayElement {
   val typeName = "ArrayElement"
 
   def apply(value: AnyElements, path: PathStr): ArrayElement = apply(None, None, value, path)
+}
+
+case class Ref(name: Name, description: Description, value: AnyElement, ref: PathStr, path: PathStr) extends StorageElement[AnyElement] {
+  def repr = Repr(path -> RefMetadata(name, description, ref, path))
+
+  def toPrettyString(depth: Int = 0, showIndex: Boolean = false): String = {
+    val x = if (showIndex) path.index else path.name
+    ((" " * 2) * depth) + "|__".blue + x.blue + " -> " + value.prettify
+  }
+  def prettify: String = toPrettyString()
+
+  def withValue(value: AnyElements) = ???
+  def withValue(value: Value) = ???
+  def withDescription(description: Description) = copy(description = description)
+  def withPath(path: PathStr) = copy(path = path)
+  def updated(name: Name, description: Description, value: AnyElements) = ???
+  def withElement(path: PathStr, x: AnyElement) = copy(value = x)
+  def addElement(definition: AnyElement) = ???
+}
+
+object Ref {
+  val typeName = "Ref"
 }

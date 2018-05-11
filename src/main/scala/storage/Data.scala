@@ -3,7 +3,7 @@ package storage
 case class Data(elements: Set[DataElement]) {
   def apply(path: Path): Value = elements
     .find(_.path == path)
-    .getOrElse(throw StorageException(path.pathStr, s"Invalid path ${path.pathStr}"))
+    .getOrElse(throw StorageException(s"Invalid path ${path.pathStr}"))
 }
 
 object Data {

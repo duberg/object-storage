@@ -43,7 +43,7 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def getData(paths: Paths): Data = Data(paths.map(path => DataElement(path, apply(path).value)).toSet)
 
-  def updateElement(path: Path, definition: AnyElement, consistency: Consistency): Storage = copy(repr.updateElement(path.pathStr, definition, consistency))
+  def updateElement(path: Path, x: AnyElement, consistency: Consistency): Storage = copy(repr.updateElement(path.pathStr, x, consistency))
 
   def updateDataElement(x: DataElement): Storage = copy(repr.updateValue(x.path.pathStr, x.value))
 
@@ -57,7 +57,7 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def createElement(x: AnyElement): Storage = copy(repr.addElement(x))
 
-  def createElement(path: Path, definition: AnyElement): Storage = copy(repr.addElement(path.pathStr, definition))
+  def createElement(path: Path, x: AnyElement): Storage = copy(repr.addElement(path.pathStr, x))
 
   def paths: Paths = Paths(repr.impl.keys.toList.map(Path.apply))
 
@@ -69,15 +69,15 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def createElement(path: PathStr, x: AnyElement): StorageLike = createElement(Path(path), x)
 
-//  def addData(x: (PathStr, Value)*): StorageLike = x match {
-//    case Seq() => this
-//    case Seq((path, value)) => addDataElement(DataElement(path, value))
-//    case Seq(a, as @ _*) => addData(Data(x.toMap))
-//  }
-//
-//  repr.impl.foreach({
-//    case (path, reprElement) => require(path == reprElement.path, s"Invalid reprElement $reprElement: require same path")
-//  })
+  //  def addData(x: (PathStr, Value)*): StorageLike = x match {
+  //    case Seq() => this
+  //    case Seq((path, value)) => addDataElement(DataElement(path, value))
+  //    case Seq(a, as @ _*) => addData(Data(x.toMap))
+  //  }
+  //
+  //  repr.impl.foreach({
+  //    case (path, reprElement) => require(path == reprElement.path, s"Invalid reprElement $reprElement: require same path")
+  //  })
 
   def deleteElement(path: Path) = ???
 }

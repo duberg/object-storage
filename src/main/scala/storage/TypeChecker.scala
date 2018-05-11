@@ -7,7 +7,7 @@ trait TypeChecker {
     (x, y) match {
       case (x: ObjectMetadata, y: ObjectElement) =>
       case (x: ArrayElement, y: ArrayElement) =>
-      case _ => if (clsX != clsY) throw StorageException(path, s"Invalid type $clsY, require $clsX")
+      case _ => if (clsX != clsY) throw StorageException(s"Invalid type $clsY, require $clsX")
     }
   }
 }

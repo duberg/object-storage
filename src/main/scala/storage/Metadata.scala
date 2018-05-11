@@ -26,3 +26,13 @@ case class ArrayMetadata(name: Name, description: Description, path: PathStr) ex
 object ArrayMetadata {
   val typeName = "ArrayMetadata"
 }
+
+case class RefMetadata(name: Name, description: Description, ref: PathStr, path: PathStr) extends Metadata {
+  def withPath(path: PathStr) = copy(path = path)
+  def withRef(ref: PathStr) = copy(ref = ref)
+  def withDescription(description: Description) = copy(description = description)
+}
+
+object RefMetadata {
+  val typeName = "RefMetadata"
+}
