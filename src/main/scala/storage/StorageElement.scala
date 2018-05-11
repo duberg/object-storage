@@ -20,7 +20,7 @@ trait StorageElement[+T] extends Printable { self =>
 abstract class SimpleElement[T <: Value] extends StorageElement[T] with ReprElement { self =>
   def repr: Repr = Repr(path -> self)
   def toPrettyString(depth: Int = 0, showIndex: Boolean = false): String = {
-    val x = if (showIndex) path.index else path.headPathStr
+    val x = if (showIndex) path.index else path.name
     ((" " * 2) * depth) + "|__".yellow + x.red + " -> " + self.toString
   }
   def prettify: String = toPrettyString()
@@ -116,10 +116,10 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
 
   //  def updateValue(reprElem: Value): ObjectElement = reprElem match {
   //    case v: AnySimpleElement =>
-  //      pathStr.get(v.headPathStr) match {
+  //      pathStr.get(v.name) match {
   //        case Some(d: AnySimpleElement) => copy(
   //          description = v.description,
-  //          pathStr = pathStr + (d.headPathStr -> d.updateValue(v.pathStr)))
+  //          pathStr = pathStr + (d.name -> d.updateValue(v.pathStr)))
   //        case _ => throw Exception
   //      }
   //    case v: ObjectElement =>
@@ -132,7 +132,7 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
   def withValue(value: Value): ObjectElement = ???
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: PathStr): ObjectElement = {
-    // !!! headPathStr
+    // !!! name
     copy(
       value = value.mapValues(d => d.withPath(s"$path.${d.path}")),
       path = path)

@@ -3,20 +3,15 @@ package storage
 import storage.Path._
 
 case class Path(pathStr: PathStr) {
-  lazy val paths: Paths = Paths(split(pathStr).map(Path.apply))
-
-  lazy val headPathStr: PathStr = pathStr
-    .replaceFirst("([^.]+\\.)+", "")
-  //.replaceFirst("\\[\\d+\\]", "")
-
-  lazy val index: String = headPathStr
+  def name: String = paths.last.pathStr
+  def paths: Paths = Paths(split(pathStr).map(Path.apply))
+  def index: String = name
     .replaceFirst("([^\\[])+\\[", "")
     .head
     .toString
+  def isRoot: Boolean = pathStr == "$"
 
   require(pathStr.nonEmpty, "Require non empty path")
-
-  def isRoot: Boolean = pathStr == "$"
 }
 
 object Path {
@@ -33,11 +28,9 @@ object Path {
 }
 
 case class Paths(list: List[Path]) {
-  lazy val listStr: List[PathStr] = list.map(_.pathStr)
-
+  def last: Path = list.last
+  def listStr: List[PathStr] = list.map(_.pathStr)
   def map[T](f: Path => T): List[T] = list map f
-
-  //require(list.nonEmpty)
 }
 
 object Paths {

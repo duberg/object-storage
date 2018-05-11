@@ -4,8 +4,8 @@ import storage.Path._
 
 object Implicits {
   implicit class PathStrOps(x: PathStr) {
+    def name: PathStr = paths.last
     def paths: List[PathStr] = split(x)
-    def headPathStr: PathStr = Path(x).headPathStr
     def index: String = Path(x).index
     def isRoot: Boolean = Path(x).isRoot
   }

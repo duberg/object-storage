@@ -143,7 +143,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
             val xImpl = impl.filterKeys(_ contains s"${m.path}")
             definition match {
               case x: ObjectElement =>
-                val objPath = m.path.dropRight(m.path.headPathStr.size + 1)
+                val objPath = m.path.dropRight(m.path.name.size + 1)
                 val yImpl = objPath match {
                   case "" => definition.repr.impl
                   case _ => definition.repr.impl.map({
@@ -256,7 +256,10 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     copy(objImpl + (rootMetadata.path -> rootMetadata))
   }
 
-  def root: ObjectElement = withRootMetadata.getObjectElement(rootMetadata)
+  def root: ObjectElement =
+    withRootMetadata
+      .getObjectElement(rootMetadata)
+     // .withPath("s")
 }
 
 object Repr {
