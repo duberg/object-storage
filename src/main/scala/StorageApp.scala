@@ -47,13 +47,13 @@ object StorageApp extends App {
 
   val updatedFiles: ArrayElement = storageUpdated
     .getArrayElement("form1.files")
-  // .addElement(StringElement("newfile", None, "", "newfile"))
+  // .createElement(StringElement("newfile", None, "", "newfile"))
 
   val newStorage = Storage.empty
-    .addElement("x", storageUpdated("form1.parent")) // add object element
-    .addElement("x.form1.parent.y", storageUpdated("x1")) // add simple element
-    .addElement(storageUpdated("form1")) // add object element to root
-    .addElement(storageUpdated("x1")) // add to root
+    .createElement("x", storageUpdated("form1.parent")) // add object element
+    .createElement("x.form1.parent.y", storageUpdated("x1")) // add simple element
+    .createElement(storageUpdated("form1")) // add object element to root
+    .createElement(storageUpdated("x1")) // add to root
   //.updateElement("form1.files", updatedFiles)
 
   println()

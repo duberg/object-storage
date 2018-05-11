@@ -55,9 +55,9 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
     case Seq(a, as @ _*) => updateData(Data(x.toMap))
   }
 
-  def addElement(x: AnyElement): Storage = copy(repr.addElement(x))
+  def createElement(x: AnyElement): Storage = copy(repr.addElement(x))
 
-  def addElement(path: Path, definition: AnyElement): Storage = copy(repr.addElement(path.pathStr, definition))
+  def createElement(path: Path, definition: AnyElement): Storage = copy(repr.addElement(path.pathStr, definition))
 
   def paths: Paths = Paths(repr.impl.keys.toList.map(Path.apply))
 
@@ -67,21 +67,19 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def updateElement(path: PathStr, x: AnyElement, consistency: Consistency = Consistency.Strict): Storage = updateElement(Path(path), x, consistency)
 
-  def addElement(path: PathStr, x: AnyElement): StorageLike = addElement(Path(path), x)
+  def createElement(path: PathStr, x: AnyElement): StorageLike = createElement(Path(path), x)
 
-  def addDataElement(x: DataElement) = ???
+//  def addData(x: (PathStr, Value)*): StorageLike = x match {
+//    case Seq() => this
+//    case Seq((path, value)) => addDataElement(DataElement(path, value))
+//    case Seq(a, as @ _*) => addData(Data(x.toMap))
+//  }
+//
+//  repr.impl.foreach({
+//    case (path, reprElement) => require(path == reprElement.path, s"Invalid reprElement $reprElement: require same path")
+//  })
 
-  def addData(x: Data) = ???
-
-  def addData(x: (PathStr, Value)*): StorageLike = x match {
-    case Seq() => this
-    case Seq((path, value)) => addDataElement(DataElement(path, value))
-    case Seq(a, as @ _*) => addData(Data(x.toMap))
-  }
-
-  repr.impl.foreach({
-    case (path, reprElement) => require(path == reprElement.path, s"Invalid reprElement $reprElement: require same path")
-  })
+  def deleteElement(path: Path) = ???
 }
 
 object Storage {

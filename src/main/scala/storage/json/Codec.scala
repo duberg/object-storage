@@ -19,7 +19,7 @@ trait Codec {
     case x: DecimalElement => x.asJson
     case x: ObjectElement => x.asJson
     case x: ArrayElement => x.asJson
-    case x: Map[String, Any] => x.asJson
+    case x: Map[String, Any] @ unchecked => x.asJson
   }
 
   implicit val decodeAny: Decoder[Any] = (c: HCursor) => {
@@ -46,7 +46,7 @@ trait Codec {
   implicit val encodeRepr: Encoder[Repr] = (x: Repr) => Json.obj(x.impl.mapValues(_.asJson).toSeq: _*)
 
   implicit val encodeReprElement: Encoder[ReprElement] = {
-    case x: AnySimpleElement => x.asJson
+    case x: AnySimpleElement @unchecked => x.asJson
     case x: Metadata => x.asJson
   }
 
