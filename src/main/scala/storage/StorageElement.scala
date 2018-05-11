@@ -57,7 +57,7 @@ trait ComplexElement extends StorageElement[AnyElements] { self =>
           s" [${d.getClass.getSimpleName}]".yellow + toPrettyString(y, depth + 1, showIndex = true)
       case (acc, (n, d: Ref)) =>
         acc + "\n" + ((" " * 2) * depth) + "|__".yellow + n.blue +
-          s" [${d.getClass.getSimpleName}]".blue + toPrettyString(List((d.ref, d.value)), depth + 1)
+          s" ->".blue + toPrettyString(List((d.ref, d.value)), depth + 1)
     }
   }
   def prettify: String = toPrettyString()
@@ -75,7 +75,7 @@ case class BooleanElement(name: Name, description: Description, value: Boolean, 
 }
 
 object BooleanElement {
-  val typeName = "BooleanElement"
+  val typeName = "boolean"
 
   def apply(value: Boolean, path: PathStr): BooleanElement = BooleanElement(None, None, value, path)
 }
@@ -88,7 +88,7 @@ case class IntElement(name: Name, description: Description, value: Int, path: Pa
 }
 
 object IntElement {
-  val typeName = "IntElement"
+  val typeName = "int"
 
   def apply(value: Int, path: PathStr): IntElement = IntElement(None, None, value, path)
 }
@@ -101,7 +101,7 @@ case class DecimalElement(name: Name, description: Description, value: BigDecima
 }
 
 object DecimalElement {
-  val typeName = "DecimalElement"
+  val typeName = "decimal"
 
   def apply(value: BigDecimal, path: PathStr): DecimalElement = DecimalElement(None, None, value, path)
 }
@@ -114,7 +114,7 @@ case class StringElement(name: Name, description: Description, value: String, pa
 }
 
 object StringElement {
-  val typeName = "StringElement"
+  val typeName = "string"
 
   def apply(value: String, path: PathStr): StringElement = StringElement(None, None, value, path)
 }
@@ -154,7 +154,7 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
 }
 
 object ObjectElement {
-  val typeName = "ObjectElement"
+  val typeName = "object"
 
   def apply(value: AnyElements, path: PathStr): ObjectElement = apply(None, None, value, path)
   def apply(x: AnyElement*): ObjectElement = {
@@ -183,7 +183,7 @@ case class ArrayElement(name: Name, description: Description, value: AnyElements
 }
 
 object ArrayElement {
-  val typeName = "ArrayElement"
+  val typeName = "array"
 
   def apply(value: AnyElements, path: PathStr): ArrayElement = apply(None, None, value, path)
 }
@@ -207,5 +207,5 @@ case class Ref(name: Name, description: Description, value: AnyElement, ref: Pat
 }
 
 object Ref {
-  val typeName = "Ref"
+  val typeName = "ref"
 }

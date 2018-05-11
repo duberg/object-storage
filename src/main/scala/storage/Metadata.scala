@@ -15,7 +15,7 @@ case class ObjectMetadata(name: Name, description: Description, path: PathStr) e
 }
 
 object ObjectMetadata {
-  val typeName = "ObjectMetadata"
+  val typeName = "objectMetadata"
 }
 
 case class ArrayMetadata(name: Name, description: Description, path: PathStr) extends Metadata {
@@ -24,7 +24,7 @@ case class ArrayMetadata(name: Name, description: Description, path: PathStr) ex
 }
 
 object ArrayMetadata {
-  val typeName = "ArrayMetadata"
+  val typeName = "arrayMetadata"
 }
 
 case class RefMetadata(name: Name, description: Description, ref: PathStr, path: PathStr) extends Metadata {
@@ -34,5 +34,5 @@ case class RefMetadata(name: Name, description: Description, ref: PathStr, path:
 }
 
 object RefMetadata {
-  val typeName = "RefMetadata"
+  val typeName = "refMetadata"
 }

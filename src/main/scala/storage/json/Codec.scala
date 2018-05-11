@@ -170,7 +170,7 @@ trait Codec {
     ("type", ObjectElement.typeName.asJson))
 
   implicit val encodeArrayElement: Encoder[ArrayElement] =
-    (x: ArrayElement) => Json.obj(x.value.mapValues(_.asJson).toSeq: _*)
+    (x: ArrayElement) => Json.arr(x.value.mapValues(_.asJson).values.toSeq: _*)
 
   implicit val encodeReferenceElement: Encoder[Ref] = (x: Ref) => Json.obj(
     ("name", x.name.asJson),
