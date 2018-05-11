@@ -8,22 +8,53 @@
     "name" : "name1",
     "description" : "desc1",
     "value" : {
+      "parent2" : {
+        "description" : "Reference to parent object",
+        "value" : {
+          "value" : {
+            "lastname" : {
+              "value" : "xx",
+              "path" : "$.form1.parent.lastname",
+              "type" : "StringElement"
+            },
+            "firstname" : {
+              "value" : "xx",
+              "path" : "$.form1.parent.firstname",
+              "type" : "StringElement"
+            },
+            "middlename" : {
+              "value" : "xx",
+              "path" : "$.form1.parent.middlename",
+              "type" : "StringElement"
+            }
+          },
+          "path" : "$.form1.parent",
+          "type" : "ObjectElement"
+        },
+        "ref" : "$.form1.parent",
+        "path" : "$.form1.parent2",
+        "type" : "Ref"
+      },
       "parent" : {
-        "lastname" : {
-          "value" : "xx",
-          "path" : "$.form1.parent.lastname",
-          "type" : "StringElement"
+        "value" : {
+          "lastname" : {
+            "value" : "xx",
+            "path" : "$.form1.parent.lastname",
+            "type" : "StringElement"
+          },
+          "firstname" : {
+            "value" : "xx",
+            "path" : "$.form1.parent.firstname",
+            "type" : "StringElement"
+          },
+          "middlename" : {
+            "value" : "xx",
+            "path" : "$.form1.parent.middlename",
+            "type" : "StringElement"
+          }
         },
-        "firstname" : {
-          "value" : "xx",
-          "path" : "$.form1.parent.firstname",
-          "type" : "StringElement"
-        },
-        "middlename" : {
-          "value" : "xx",
-          "path" : "$.form1.parent.middlename",
-          "type" : "StringElement"
-        }
+        "path" : "$.form1.parent",
+        "type" : "ObjectElement"
       },
       "middlename" : {
         "value" : "middlename",
@@ -31,22 +62,26 @@
         "type" : "StringElement"
       },
       "data" : {
-        "title" : {
-          "value" : {
-            "en" : {
-              "value" : "Title",
-              "path" : "$.form1.data.title.en",
-              "type" : "StringElement"
+        "value" : {
+          "title" : {
+            "value" : {
+              "en" : {
+                "value" : "Title",
+                "path" : "$.form1.data.title.en",
+                "type" : "StringElement"
+              },
+              "ru" : {
+                "value" : "+++",
+                "path" : "$.form1.data.title.ru",
+                "type" : "StringElement"
+              }
             },
-            "ru" : {
-              "value" : "+++",
-              "path" : "$.form1.data.title.ru",
-              "type" : "StringElement"
-            }
-          },
-          "path" : "$.form1.data.title",
-          "type" : "ObjectElement"
-        }
+            "path" : "$.form1.data.title",
+            "type" : "ObjectElement"
+          }
+        },
+        "path" : "$.form1.data",
+        "type" : "ObjectElement"
       },
       "files" : {
         "[0]" : {

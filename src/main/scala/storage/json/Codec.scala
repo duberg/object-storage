@@ -176,6 +176,7 @@ trait Codec {
     ("name", x.name.asJson),
     ("description", x.description.asJson),
     ("value", x.value.asJson),
+    ("ref", x.ref.asJson),
     ("path", x.path.asJson),
     ("type", Ref.typeName.asJson))
 
