@@ -1,7 +1,7 @@
 # Akka persistence object storage with fast serialization
 
 **Json object**
-```storage.json
+```json
 {
     "isEmployee" : {
         "value" : true,
