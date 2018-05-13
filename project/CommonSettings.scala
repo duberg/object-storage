@@ -9,6 +9,15 @@ object CommonSettings {
     scalaVersion := "2.12.6",
     libraryDependencies ++= Dependencies.all,
     testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
-    parallelExecution in Test := false
+    parallelExecution in Test := false,
+    scalacOptions ++= Seq(
+      "-target:jvm-1.8",
+      "-encoding", "UTF-8",
+      "-deprecation", // warning and location for usages of deprecated APIs
+      "-feature", // warning and location for usages of features that should be imported explicitly
+      "-unchecked", // additional warnings where generated code depends on assumptions
+      "-language:postfixOps",
+      "-language:implicitConversions"
+    )
   )
 }

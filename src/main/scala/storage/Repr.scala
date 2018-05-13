@@ -1,9 +1,9 @@
 package storage
 
-import storage.Implicits._
+import Path._
 
 case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
-  def apply(path: PathStr): AnyElement = impl.get(path) match {
+  def apply(path: Path): AnyElement = impl.get(path.pathStr) match {
     case Some(x) => x match {
       case x: AnySimpleElement @unchecked => x
       case x: RefMetadata => apply(x.ref)
@@ -12,7 +12,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     case _ => throw StorageException(s"Invalid path $path")
   }
 
-  def getMetadata(path: PathStr): Metadata = impl.get(path) match {
+  def getMetadata(path: Path): Metadata = impl.get(path.pathStr) match {
     case Some(x) => x match {
       case metadata: Metadata => metadata
       case _ => throw StorageException(s"Metadata not found")
@@ -20,7 +20,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     case None => throw StorageException(s"Invalid path $path")
   }
 
-  def getObjectMetadata(path: PathStr): ObjectMetadata = impl.get(path) match {
+  def getObjectMetadata(path: Path): ObjectMetadata = impl.get(path.pathStr) match {
     case Some(x) => x match {
       case metadata: ObjectMetadata => metadata
       case _ => throw StorageException(s"Invalid metadata")
@@ -28,7 +28,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     case None => throw StorageException(s"Invalid path $path")
   }
 
-  def getArrayMetadata(path: PathStr): ArrayMetadata = impl.get(path) match {
+  def getArrayMetadata(path: Path): ArrayMetadata = impl.get(path.pathStr) match {
     case Some(x) => x match {
       case metadata: ArrayMetadata => metadata
       case _ => throw StorageException(s"Invalid metadata")
@@ -36,130 +36,71 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     case None => throw StorageException(s"Invalid path $path")
   }
 
-  private def traverse[T <: ComplexElement](obj: T, x: List[ReprPaths]): T = {
-    def group(x: List[ReprPaths]): Map[PathStr, List[ReprPaths]] = x.groupBy(_.paths.head)
-    def acc(obj: T, group: (PathStr, List[ReprPaths])): T = {
-      def convert(group: (PathStr, List[ReprPaths])): AnyElement = group._2 match {
-        // group is simple element
-        case ReprPaths(v: AnySimpleElement, _) :: Nil => v.asStorageElement
-        // group is reference
-        case ReprPaths(v: RefMetadata, _) :: Nil => getReferenceElement(v)
-        // group is object element
-        case groupElements @ y :: ys =>
-          groupElements
-            .find(_.paths.size == 1)
-            .map(_.reprElement)
-            .map {
-              case x: ObjectMetadata => getObjectElement(x)
-              case x: ArrayMetadata => getArrayElement(x)
-            }
-            .get
-        case _ => throw StorageException(s"Invalid path in group ${group._2}")
-      }
-      obj.withElement(group._1, convert(group)).asInstanceOf[T]
-    }
-
-    (obj /: group(x))(acc)
-  }
-
-  /**
-   * - Разбиваем полный путь в список путей
-   * - Группируем по первому элементу списка
-   * - Математическая свертка по группам:
-   *   - Если группа состоит из одного элемента, значит это простой элемент
-   *   - Если группа состоит из больше чем одного элемента значит это объект
-   */
   def getComplexElement(metadata: Metadata): ComplexElement = metadata match {
     case x: ObjectMetadata => getObjectElement(x)
     case x: ArrayMetadata => getArrayElement(x)
   }
 
-  def getObjectElement(metadata: ObjectMetadata): ObjectElement = {
-    val objPath = s"${metadata.path}."
+  def getObjectElement(metadata: ObjectMetadata): ObjectElement = ObjectElement(
+    name = metadata.name,
+    description = metadata.description,
+    repr = this,
+    path = metadata.path)
 
-    val objRepr: Map[PathStr, ReprElement] = impl
-      .filterKeys(_ contains objPath)
-      .map({ case (k, v) => (k drop objPath.length, v) })
+  def getArrayElement(metadata: ArrayMetadata): ArrayElement = ArrayElement(
+    name = metadata.name,
+    description = metadata.description,
+    repr = this,
+    path = metadata.path)
 
-    val reprPaths = (List[ReprPaths]() /: objRepr) {
-      case (y, (k, v)) => y :+ ReprPaths(v, k.paths)
-    }
+  def getReferenceElement(metadata: RefMetadata): Ref = Ref(
+    metadata.name,
+    metadata.description,
+    value = apply(metadata.ref),
+    ref = metadata.ref,
+    path = metadata.path)
 
-    val obj = ObjectElement(metadata.name, metadata.description, Map[PathStr, AnyElement](), metadata.path)
-
-    traverse(obj, reprPaths)
-  }
-
-  def getArrayElement(metadata: ArrayMetadata): ArrayElement = {
-    val objPath = s"${metadata.path}["
-
-    val objRepr: Map[PathStr, ReprElement] = impl
-      .filterKeys(_ contains objPath)
-      .map({ case (k, v) => (k drop objPath.length - 1, v) })
-
-    val reprPaths: List[ReprPaths] = (List[ReprPaths]() /: objRepr) {
-      case (y, (k, v)) => y :+ ReprPaths(v, k.paths)
-    }
-
-    val obj = ArrayElement(
-      name = metadata.name,
-      description = metadata.description,
-      value = Map.empty,
-      path = metadata.path)
-
-    traverse(obj, reprPaths)
-  }
-
-  def getReferenceElement(metadata: RefMetadata): Ref = {
-    Ref(
-      metadata.name,
-      metadata.description,
-      value = apply(metadata.ref),
-      ref = metadata.ref,
-      path = metadata.path)
-  }
-
-  def updateValue(path: PathStr, value: Value, consistency: Consistency = Consistency.Strict): Repr = {
+  def updateValue(path: Path, value: Value, consistency: Consistency = Consistency.Strict): Repr = {
     consistency match {
       case Consistency.Strict =>
-        impl.getOrElse(path, throw StorageException(s"Invalid path $path")) match {
+        impl.getOrElse(path.pathStr, throw StorageException(s"Invalid path $path")) match {
           case x: AnySimpleElement @unchecked => copy(impl ++ x.withValue(value).repr.impl)
           case x: Metadata => throw StorageException(s"Can't update ComplexElement")
         }
       case Consistency.Disabled =>
         value match {
-          case x: Int => copy(impl + (path -> IntElement(None, None, x, path)))
-          case x: String => copy(impl + (path -> StringElement(None, None, x, path)))
-          case x: Boolean => copy(impl + (path -> BooleanElement(None, None, x, path)))
-          case x: BigDecimal => copy(impl + (path -> DecimalElement(None, None, x, path)))
+          case x: Int => copy(impl + (path.pathStr -> IntElement(None, None, x, path)))
+          case x: String => copy(impl + (path.pathStr -> StringElement(None, None, x, path)))
+          case x: Boolean => copy(impl + (path.pathStr -> BooleanElement(None, None, x, path)))
+          case x: BigDecimal => copy(impl + (path.pathStr -> DecimalElement(None, None, x, path)))
           case x => throw StorageException(s"Invalid pathStr $x")
         }
     }
   }
 
-  def updateElement(path: PathStr, definition: AnyElement, consistency: Consistency = Consistency.Strict): Repr = {
+  def updateElement(path: Path, definition: AnyElement, consistency: Consistency = Consistency.Strict): Repr = {
     consistency match {
       case Consistency.Strict =>
         // fast read from impl to check type
-        val reprElement = impl.getOrElse(path, throw StorageException(s"Invalid path $path"))
-        checkType(path, reprElement, definition)
+        val reprElement = impl.getOrElse(path.pathStr, throw StorageException(s"Invalid path $path"))
+        checkType(path.pathStr, reprElement, definition)
         reprElement match {
           case _: AnySimpleElement @unchecked =>
-            copy(impl + (path -> reprElement
+            copy(impl + (path.pathStr -> reprElement
               .withDescription(definition.description)
               .withValue(definition.value)))
           case m: Metadata =>
             // object impl
-            val xImpl = impl.filterKeys(_ contains s"${m.path}")
+            val xImpl = impl.filterKeys(_ contains m.path.pathStr)
             definition match {
               case x: ObjectElement =>
-                val objPath = m.path.dropRight(m.path.name.size + 1)
+                val objPath = m.path.pathStr.dropRight(m.path.name.length + 1)
                 val yImpl = objPath match {
                   case "" => definition.repr.impl
                   case _ => definition.repr.impl.map({
                     case (k, v) =>
                       val p = s"$objPath.$k"
-                      p -> v.withPath(p)
+                      p -> v.withPath(Path(p))
                   })
                 }
                 // update impl
@@ -180,14 +121,14 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
                 copy(impl ++ zImpl)
               case x: ArrayElement =>
 
-                val objPath = m.path.dropRight(m.name.size + 1)
+                val objPath = m.path.pathStr.dropRight(m.name.size + 1)
 
                 val yImpl = objPath match {
                   case "" => definition.repr.impl
                   case _ => definition.repr.impl.map({
                     case (k, v) =>
                       val p = s"$objPath.$k"
-                      p -> v.withPath(p)
+                      p -> v.withPath(Path(p))
                   })
                 }
                 // update impl
@@ -213,18 +154,18 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     }
   }
 
-  def addElement(path: PathStr, definition: AnyElement): Repr = {
+  def addElement(path: Path, definition: AnyElement): Repr = {
     if (definition.isSimple) copy(impl ++ definition.repr.impl)
     else {
       // create all metadata objects for path
-      val (metadataObjs, _) = ((List[Metadata](), "") /: s"$path.${definition.path}".paths) {
+      val (metadataObjs, _) = ((List[Metadata](), "") /: Path(s"${path.pathStr}.${definition.path.pathStr}").elements) {
         case ((metadataList, accPath), metadataPath) =>
           val path = if (accPath.isEmpty) metadataPath else s"$accPath.$metadataPath"
           (metadataList :+ ObjectMetadata(None, None, path)) -> path
       }
 
       val metadataObjsImpl = metadataObjs
-        .map(metadata => metadata.path -> metadata)
+        .map(metadata => metadata.path.pathStr -> metadata)
         .toMap
         .filterKeys(impl.get(_).isEmpty)
 
@@ -235,21 +176,21 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     }
   }
 
-  def addElement(definition: AnyElement): Repr = {
-    if (definition.isSimple) copy(impl ++ definition.repr.impl)
+  def addElement(x: AnyElement): Repr = {
+    if (x.isSimple) copy(impl ++ x.repr.impl)
     // create all metadata objects for path
-    val (metadataObjs, _) = ((List[Metadata](), "") /: s"${definition.path}".paths) {
+    val (metadataObjs, _) = ((List[Metadata](), "") /: x.path.elements) {
       case ((metadataList, accPath), metadataPath) =>
         val path = if (accPath.isEmpty) metadataPath else s"$accPath.$metadataPath"
         (metadataList :+ ObjectMetadata(None, None, path)) -> path
     }
 
     val metadataObjsImpl = metadataObjs
-      .map(metadata => metadata.path -> metadata)
+      .map(metadata => metadata.path.pathStr -> metadata)
       .toMap
       .filterKeys(impl.get(_).isEmpty)
 
-    val definitionImpl = definition.repr.impl
+    val definitionImpl = x.repr.impl
 
     // merge maps
     copy(impl ++ definitionImpl ++ metadataObjsImpl)
@@ -260,20 +201,20 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
   def withRootMetadata: Repr = {
     val objImpl = impl.map({
       case (k, v: RefMetadata) =>
-        val path = s"$$.$k"
-        val ref = s"$$.${v.ref}"
-        path -> v.withPath(path).withRef(ref)
+        val path = Path(s"$$.$k")
+        val ref = Path(s"$$.${v.ref}")
+        path.pathStr -> v.withPath(path).withRef(ref)
       case (k, v) =>
-        val path = s"$$.$k"
-        path -> v.withPath(path)
+        val path = Path(s"$$.$k")
+        path.pathStr -> v.withPath(path)
     })
-    copy(objImpl + (rootMetadata.path -> rootMetadata))
+    copy(objImpl + (rootMetadata.path.pathStr -> rootMetadata))
   }
 
   def root: ObjectElement =
     withRootMetadata
       .getObjectElement(rootMetadata)
-  // .withPath("s")
+      .withPath(Path.root)
 }
 
 object Repr {
@@ -282,10 +223,10 @@ object Repr {
 }
 
 trait ReprElement {
-  def path: PathStr
+  def path: Path
   def withValue(value: Value): ReprElement
   def withDescription(description: Description): ReprElement
-  def withPath(path: PathStr): ReprElement
+  def withPath(path: Path): ReprElement
   def asStorageElement: AnySimpleElement = this match {
     case x: IntElement => x
     case x: StringElement => x
@@ -294,4 +235,4 @@ trait ReprElement {
   }
 }
 
-case class ReprPaths(reprElement: ReprElement, paths: List[PathStr])
+case class ReprPaths(reprElement: ReprElement, pathElements: Seq[String])

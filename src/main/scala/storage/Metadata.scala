@@ -3,36 +3,42 @@ package storage
 trait Metadata extends ReprElement {
   def name: Name
   def description: Description
-  def path: PathStr
+  def path: Path
   def withValue(value: Value): Metadata = ???
   def withDescription(description: Description): Metadata
-  def withPath(path: PathStr): Metadata
+  def withPath(path: Path): Metadata
 }
 
-case class ObjectMetadata(name: Name, description: Description, path: PathStr) extends Metadata {
-  def withPath(path: PathStr) = copy(path = path)
+case class ObjectMetadata(name: Name, description: Description, path: Path) extends Metadata {
+  def withPath(path: Path) = copy(path = path)
   def withDescription(description: Description) = copy(description = description)
 }
 
 object ObjectMetadata {
   val typeName = "objectMetadata"
+
+  def apply(name: Name, description: Description, path: PathStr): ObjectMetadata = ObjectMetadata(name, description, Path(path))
 }
 
-case class ArrayMetadata(name: Name, description: Description, path: PathStr) extends Metadata {
-  def withPath(path: PathStr) = copy(path = path)
+case class ArrayMetadata(name: Name, description: Description, path: Path) extends Metadata {
+  def withPath(path: Path) = copy(path = path)
   def withDescription(description: Description) = copy(description = description)
 }
 
 object ArrayMetadata {
   val typeName = "arrayMetadata"
+
+  def apply(name: Name, description: Description, path: PathStr): ArrayMetadata = ArrayMetadata(name, description, Path(path))
 }
 
-case class RefMetadata(name: Name, description: Description, ref: PathStr, path: PathStr) extends Metadata {
-  def withPath(path: PathStr) = copy(path = path)
-  def withRef(ref: PathStr) = copy(ref = ref)
+case class RefMetadata(name: Name, description: Description, ref: Path, path: Path) extends Metadata {
+  def withPath(path: Path) = copy(path = path)
+  def withRef(ref: Path) = copy(ref = ref)
   def withDescription(description: Description) = copy(description = description)
 }
 
 object RefMetadata {
   val typeName = "refMetadata"
+
+  def apply(name: Name, description: Description, ref: PathStr, path: PathStr): RefMetadata = RefMetadata(name, description, Path(ref), Path(path))
 }

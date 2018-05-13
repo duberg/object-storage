@@ -8,24 +8,24 @@ package storage
  *  - Fast akka persistence serialization
  */
 case class Storage(repr: Repr = Repr.empty) extends StorageLike {
-  def apply(path: Path): AnyElement = repr(path.pathStr)
+  def apply(path: Path): AnyElement = repr(path)
 
-  def getBoolean(path: Path): Boolean = repr(path.pathStr) match {
+  def getBoolean(path: Path): Boolean = repr(path) match {
     case x: BooleanElement => x.value
     case x: StringElement => x.value.toBoolean
   }
 
-  def getInt(path: Path): Int = repr(path.pathStr) match {
+  def getInt(path: Path): Int = repr(path) match {
     case x: IntElement => x.value
     case x: StringElement => x.value.toInt
   }
 
-  def getString(path: Path): String = repr(path.pathStr) match {
+  def getString(path: Path): String = repr(path) match {
     case x: StringElement => x.value
     case x => x.toString
   }
 
-  def getDecimal(path: Path): BigDecimal = repr(path.pathStr) match {
+  def getDecimal(path: Path): BigDecimal = repr(path) match {
     case x: DecimalElement => x.value
     case x: IntElement => x.value
     case x: StringElement => x.value.toInt
@@ -33,21 +33,21 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def getElement(path: Path): AnyElement = apply(path)
 
-  def getComplexElement(path: Path): ComplexElement = repr.getComplexElement(repr.getMetadata(path.pathStr))
+  def getComplexElement(path: Path): ComplexElement = repr.getComplexElement(repr.getMetadata(path))
 
-  def getObjectElement(path: Path): ObjectElement = repr.getObjectElement(repr.getObjectMetadata(path.pathStr))
+  def getObjectElement(path: Path): ObjectElement = repr.getObjectElement(repr.getObjectMetadata(path))
 
-  def getArrayElement(path: Path): ArrayElement = repr.getArrayElement(repr.getArrayMetadata(path.pathStr))
+  def getArrayElement(path: Path): ArrayElement = repr.getArrayElement(repr.getArrayMetadata(path))
 
   def getDataElement(path: Path): DataElement = DataElement(path, apply(path).value)
 
   def getData(paths: Paths): Data = Data(paths.map(path => DataElement(path, apply(path).value)).toSet)
 
-  def updateElement(path: Path, x: AnyElement, consistency: Consistency): Storage = copy(repr.updateElement(path.pathStr, x, consistency))
+  def updateElement(path: Path, x: AnyElement, consistency: Consistency): Storage = copy(repr.updateElement(path, x, consistency))
 
-  def updateDataElement(x: DataElement): Storage = copy(repr.updateValue(x.path.pathStr, x.value))
+  def updateDataElement(x: DataElement): Storage = copy(repr.updateValue(x.path, x.value))
 
-  def updateData(x: Data): Storage = copy((repr /: x.elements) { case (r, d) => r.updateValue(d.path.pathStr, d.value) })
+  def updateData(x: Data): Storage = copy((repr /: x.elements) { case (r, d) => r.updateValue(d.path, d.value) })
 
   def updateData(x: (PathStr, Value)*): Storage = x match {
     case Seq() => this
@@ -57,9 +57,7 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def createElement(x: AnyElement): Storage = copy(repr.addElement(x))
 
-  def createElement(path: Path, x: AnyElement): Storage = copy(repr.addElement(path.pathStr, x))
-
-  def paths: Paths = Paths(repr.impl.keys.toList.map(Path.apply))
+  def createElement(path: Path, x: AnyElement): Storage = copy(repr.addElement(path, x))
 
   def root: ObjectElement = repr.root
 
@@ -85,5 +83,5 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 object Storage {
   def empty: Storage = Storage(Repr.empty)
   def apply(x: Map[PathStr, ReprElement]): Storage = Storage(storage.Repr(x))
-  def apply(x: ReprElement*): Storage = Storage(Repr(x.map(r => r.path -> r).toMap))
+  def apply(x: ReprElement*): Storage = Storage(Repr(x.map(r => r.path.pathStr -> r).toMap))
 }

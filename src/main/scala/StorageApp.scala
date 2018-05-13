@@ -8,7 +8,7 @@ object StorageApp extends App {
     ObjectMetadata(Some("name1"), Some("desc1"), "form1"),
     ObjectMetadata(None, None, "form1.data"),
     ObjectMetadata(None, None, "form1.data.title"),
-    StringElement(None, None, "title1", "form1.data.title.ru"),
+    StringElement("title1", "form1.data.title.ru"),
     StringElement(None, None, "Title", "form1.data.title.en"),
     BooleanElement(None, None, value = false, "form1.check"),
     ObjectMetadata(None, None, "form1.parent"),
@@ -38,14 +38,12 @@ object StorageApp extends App {
     .updateElement("form1.parent.middlename", StringElement(Some("name"), Some("desc"), "m", "form1.parent.middlename"))
     .updateElement("form1.parent", obj1)
 
-  println(storageUpdated.asJsonStr)
+  // println(storageUpdated.asJsonStr)
   println(storageUpdated.prettify)
   println()
 
   println("=== storage representation ===")
-  storageUpdated.repr.impl.foreach({
-    case (k, v) => println(s"$k -> $v")
-  })
+  println(storageUpdated.repr.impl.mkString("\n"))
 
   val updatedFiles: ArrayElement = storageUpdated
     .getArrayElement("form1.files")
