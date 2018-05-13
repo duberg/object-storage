@@ -60,8 +60,8 @@ trait ComplexElement extends StorageElement[AnyElements] { self =>
   def prettify: String = toPrettyString()
   def withValue(value: AnyElements): ComplexElement
   def withDescription(description: Description): ComplexElement
-  def addElement(path: Path, element: AnyElement): ComplexElement
-  def addElement(element: AnyElement): ComplexElement
+  def createElement(path: Path, element: AnyElement): ComplexElement
+  def createElement(element: AnyElement): ComplexElement
 }
 
 /**
@@ -115,7 +115,7 @@ class ComplexElementFactory(repr: Repr) extends PathExtractor {
       description = description,
       path = path)
 
-    (obj /: group(reprPaths)) { case (element, group) => element.addElement(group.path, group.asAnyElement) }
+    (obj /: group(reprPaths)) { case (element, group) => element.createElement(group.path, group.asAnyElement) }
   }
 
   def buildArray(name: Name, description: Description, path: Path): ArrayElement = {
@@ -133,7 +133,7 @@ class ComplexElementFactory(repr: Repr) extends PathExtractor {
       description = description,
       path = path)
 
-    (arr /: group(reprPaths)) { case (element, group) => element.addElement(group.path, group.asAnyElement) }
+    (arr /: group(reprPaths)) { case (element, group) => element.createElement(group.path, group.asAnyElement) }
   }
 }
 
@@ -216,9 +216,8 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
       },
       path = path)
   }
-  def updated(name: Name, description: Description, value: AnyElements) = ???
-  def addElement(path: Path, x: AnyElement): ObjectElement = copy(value = value + (path.pathStr -> x))
-  def addElement(x: AnyElement) = ???
+  def createElement(path: Path, x: AnyElement): ObjectElement = copy(value = value + (path.pathStr -> x))
+  def createElement(x: AnyElement) = ???
 }
 
 object ObjectElement {
@@ -262,9 +261,8 @@ case class ArrayElement(name: Name, description: Description, value: AnyElements
       },
       path = path)
   }
-  def updated(name: Name, description: Description, value: AnyElements) = ???
-  def addElement(path: Path, x: AnyElement): ArrayElement = copy(value = value + (path.pathStr -> x))
-  def addElement(x: AnyElement) = ???
+  def createElement(path: Path, x: AnyElement): ArrayElement = copy(value = value + (path.pathStr -> x))
+  def createElement(x: AnyElement) = ???
 }
 
 object ArrayElement extends PathExtractor {
@@ -293,8 +291,6 @@ case class Ref(name: Name, description: Description, value: AnyElement, ref: Pat
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path) = copy(value = value.withPath(path), path = path)
   def withRef(path: Path) = copy(ref = path)
-  def updated(name: Name, description: Description, value: AnyElements) = ???
-  def addElement(x: AnyElement) = ???
 }
 
 object Ref {
