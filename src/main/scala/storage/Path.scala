@@ -41,14 +41,7 @@ case class Path(elements: List[String]) {
 }
 
 trait PathExtractor {
-  def pathElements(pathStr: PathStr): List[String] = {
-    pathStr.split(Pattern.quote(Separator))
-      .toList
-      .flatMap {
-        case ArrayElementPattern(a, b) => List(a, b)
-        case a => List(a)
-      }
-  }
+  def pathElements(pathStr: PathStr): List[String] = pathStr.split(Pattern.quote(Separator)).toList
 }
 
 object Path extends PathExtractor {

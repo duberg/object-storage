@@ -38,7 +38,7 @@ object StorageApp extends App {
     .updateElement("form1.parent.middlename", StringElement(Some("name"), Some("desc"), "m", "form1.parent.middlename"))
     .updateElement("form1.parent", obj1)
 
-  // println(storageUpdated.asJsonStr)
+  println(storageUpdated.asJsonStr)
   println(storageUpdated.prettify)
   println()
 

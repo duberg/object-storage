@@ -105,8 +105,7 @@ trait Codec {
   //    dv = decodeAnySimpleElement,
   //    cbf = Map.canBuildFrom)
 
-  implicit val encodePath: Encoder[Path] = (x: Path) => Json.obj(
-    ("path", x.asJson))
+  implicit val encodePath: Encoder[Path] = (x: Path) => x.pathStr.asJson
 
   implicit val encodeStringElement: Encoder[StringElement] = (x: StringElement) => Json.obj(
     ("name", x.name.asJson),
