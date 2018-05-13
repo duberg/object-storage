@@ -5,9 +5,6 @@ import io.circe.syntax._
 import storage._
 
 trait Codec {
-  //  implicit val encodeMapStringAny: Encoder[Map[String, Any]] = (x: Map[String, Any]) => Json.obj(
-  //    x.mapValues(_.asJson).toSeq: _*)
-
   implicit val encodeAny: Encoder[Any] = {
     case x: String => x.asJson
     case x: Int => x.asJson
@@ -23,27 +20,6 @@ trait Codec {
     case x: Map[String, Any] @unchecked => x.asJson
   }
 
-  implicit val decodeAny: Decoder[Any] = (c: HCursor) => {
-    val value = c.value
-    val booleanOpt = value.asBoolean
-    val numberOpt = value.asNumber.flatMap { x =>
-      val intOpt = x.toInt
-      val biggerDecimalOpt = x.toBigDecimal
-      Seq(intOpt, biggerDecimalOpt).flatten.headOption
-    }
-    val stringOpt = value.asString
-    val decodedOpt = Seq(booleanOpt, numberOpt, stringOpt).flatten.headOption
-    decodedOpt match {
-      case Some(x) => Right(x)
-      case _ => Left(DecodingFailure("Any", c.history))
-    }
-  }
-
-  implicit val encodeStorage: Encoder[Storage] = (x: Storage) => x.root.value.asJson
-
-  //  implicit val decodeStorage: Decoder[Storage] =
-  //    (c: HCursor) => for (x <- c.downField("repr").as[Repr]) yield Storage(x)
-
   implicit val encodeRepr: Encoder[Repr] = (x: Repr) => Json.obj(x.impl.mapValues(_.asJson).toSeq: _*)
 
   implicit val encodeReprElement: Encoder[ReprElement] = {
@@ -57,45 +33,12 @@ trait Codec {
   implicit val encodeAnyElements: Encoder[AnyElements] = (x: AnyElements) => Json.obj(
     x.mapValues(_.asJson).toSeq: _*)
 
+  implicit val decodeAnyElements: Decoder[AnyElements] = Decoder.decodeMapLike
+
   implicit val encodeMetadata: Encoder[Metadata] = {
     case x: ObjectMetadata => x.asJson
     case x: ArrayMetadata => x.asJson
   }
-
-  //  implicit val decodeKeyPath: KeyDecoder[Path] = (key: Path) => Some(key)
-
-  //  implicit val decodeAnySimpleElement: Decoder[AnySimpleElement] = (c: HCursor) => for {
-  //    name <- c.downField("name").as[Name]
-  //    description <- c.downField("description").as[Description]
-  //    value <- c.downField("value").as[Value]
-  //    path <- c.downField("path").as[PathStr]
-  //    typeField <- c.downField("type").as[String]
-  //  } yield typeField match {
-  //    case StringElement.typeName =>
-  //      StringElement(
-  //        name = name,
-  //        description = description,
-  //        value = value,
-  //        path = path)
-  //    case IntElement.typeName =>
-  //      IntElement(
-  //        name = name,
-  //        description = description,
-  //        value = value,
-  //        path = path)
-  //    case BooleanElement.typeName =>
-  //      BooleanElement(
-  //        name = name,
-  //        description = description,
-  //        value = value,
-  //        path = path)
-  //    case DecimalElement.typeName =>
-  //      DecimalElement(
-  //        name = name,
-  //        description = description,
-  //        value = value,
-  //        path = path)
-  //  }
 
   //  implicit val decodeRepr: Decoder[Repr] =
   //    (c: HCursor) => for (x <- c.downField("impl").as[ReprElements]) yield Repr(x)
@@ -153,13 +96,8 @@ trait Codec {
 
   implicit val decodeDataElement: Decoder[DataElement] = (c: HCursor) => for {
     path <- c.downField("path").as[String]
-    value <- c.downField("value").as[Any]
+    value <- c.downField("value").as[String]
   } yield DataElement(path, value)
-
-  //  implicit val decodeObjectElement: Decoder[DataElement] = (c: HCursor) => for {
-  //    path <- c.downField("path").as[String]
-  //    value <- c.downField("value").as[Any]
-  //  } yield DataElement(path, value)
 
   implicit val encodeObjectElement: Encoder[ObjectElement] = (x: ObjectElement) => Json.obj(
     ("name", x.name.asJson),
@@ -167,6 +105,17 @@ trait Codec {
     ("value", x.value.asJson),
     ("path", x.path.asJson),
     ("type", ObjectElement.typeName.asJson))
+
+  implicit val decodeObjectElement: Decoder[ObjectElement] = (c: HCursor) => for {
+    name <- c.downField("name").as[Name]
+    description <- c.downField("description").as[Description]
+    value <- c.downField("value").as[AnyElements]
+    path <- c.downField("path").as[PathStr]
+  } yield ObjectElement(
+    name = name,
+    description = description,
+    value = value,
+    path = path)
 
   implicit val encodeArrayElement: Encoder[ArrayElement] =
     (x: ArrayElement) => Json.arr(x.value.mapValues(_.asJson).values.toSeq: _*)
@@ -185,8 +134,8 @@ trait Codec {
       case _: IntElement => IntElement.typeName.asJson
       case _: BooleanElement => BooleanElement.typeName.asJson
       case _: DecimalElement => DecimalElement.typeName.asJson
-      case x: ObjectElement => ObjectElement.typeName.asJson
-      case x: ArrayElement => ArrayElement.typeName.asJson
+      case _: ObjectElement => ObjectElement.typeName.asJson
+      case _: ArrayElement => ArrayElement.typeName.asJson
     }
     Json.obj(
       ("name", x.name.asJson),
@@ -209,4 +158,69 @@ trait Codec {
       ("value", x.value.asJson),
       ("path", x.path.asJson))
   }
+
+  implicit val decodeAnyElement: Decoder[AnyElement] = (c: HCursor) => {
+    for {
+      name <- c.downField("name").as[Name]
+      description <- c.downField("description").as[Description]
+      value <- c.downField("value").as[Value]
+      path <- c.downField("path").as[PathStr]
+      t <- c.downField("type").as[String]
+    } yield {
+      t match {
+        case StringElement.typeName =>
+          StringElement(
+            name = name,
+            description = description,
+            value = value,
+            path = path)
+        case IntElement.typeName =>
+          IntElement(
+            name = name,
+            description = description,
+            value = value,
+            path = path)
+        case BooleanElement.typeName =>
+          BooleanElement(
+            name = name,
+            description = description,
+            value = value,
+            path = path)
+        case DecimalElement.typeName =>
+          DecimalElement(
+            name = name,
+            description = description,
+            value = value,
+            path = path)
+        case ObjectElement.typeName =>
+          // println("hhhhhhhhh")
+          ObjectElement.empty(path)
+        case ArrayElement.typeName => ArrayElement.empty(path)
+        case Ref.typeName => ArrayElement.empty(path)
+      }
+    }
+  }
+
+  implicit val decodeAny: Decoder[Any] = (c: HCursor) => {
+    // println(c.focus.get)
+    c.focus.get match {
+      case x if x.isNull => null
+      case x if x.isNumber => x.as[Double]
+      case x if x.isBoolean => x.as[Boolean]
+      case x if x.isString => x.as[String]
+      case x if x.isObject =>
+        val c = x.hcursor
+        // decodeAnyElement(x.hcursor)
+        x.as[Map[String, Any]](Decoder.decodeMapLike(KeyDecoder.decodeKeyString, decodeAny, Map.canBuildFrom))
+      case x if x.isArray =>
+        x.as[Map[String, Any]](Decoder.decodeMapLike(KeyDecoder.decodeKeyString, decodeAny, Map.canBuildFrom))
+    }
+  }
+
+  implicit val encodeStorage: Encoder[Storage] = (x: Storage) => x.root.value.asJson
+
+  implicit val decodeStorage: Decoder[Storage] =
+    Decoder
+      .decodeMapLike(KeyDecoder.decodeKeyString, decodeAnyElement, Map.canBuildFrom[String, AnyElement])
+      .map(x => Storage(Repr(x.values.flatMap(_.repr.impl).toMap)))
 }

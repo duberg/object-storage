@@ -1,7 +1,5 @@
 package storage
 
-import Path._
-
 case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
   def apply(path: Path): AnyElement = impl.get(path.pathStr) match {
     case Some(x) => x match {

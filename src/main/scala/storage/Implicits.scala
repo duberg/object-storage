@@ -21,4 +21,5 @@ object Implicits {
   }
 
   def convert[T](value: Value, path: PathStr)(implicit convert: Value => T): T = convert(value)
+  def convert[T](value: Value, path: Path)(implicit convert: Value => T): T = convert(value)
 }

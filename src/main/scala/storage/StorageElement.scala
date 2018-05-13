@@ -149,6 +149,10 @@ object BooleanElement {
 
   def apply(name: Name, description: Description, value: Boolean, path: PathStr): BooleanElement =
     BooleanElement(name, description, value, Path(path))
+
+  def apply(name: Name, description: Description, value: Value, path: PathStr): BooleanElement =
+    BooleanElement(name, description, convert(value, path), Path(path))
+
   def apply(value: Boolean, path: PathStr): BooleanElement = BooleanElement(None, None, value, Path(path))
 }
 
@@ -164,6 +168,10 @@ object IntElement {
 
   def apply(name: Name, description: Description, value: Int, path: PathStr): IntElement =
     IntElement(name, description, value, Path(path))
+
+  def apply(name: Name, description: Description, value: Value, path: PathStr): IntElement =
+    IntElement(name, description, convert(value, path), Path(path))
+
   def apply(value: Int, path: PathStr): IntElement = IntElement(None, None, value, Path(path))
 }
 
@@ -179,6 +187,10 @@ object DecimalElement {
 
   def apply(name: Name, description: Description, value: BigDecimal, path: PathStr): DecimalElement =
     DecimalElement(name, description, value, Path(path))
+
+  def apply(name: Name, description: Description, value: Value, path: PathStr): DecimalElement =
+    DecimalElement(name, description, convert(value, path), Path(path))
+
   def apply(value: BigDecimal, path: PathStr): DecimalElement = DecimalElement(None, None, value, Path(path))
 }
 
@@ -194,6 +206,10 @@ object StringElement {
 
   def apply(name: Name, description: Description, value: String, path: PathStr): StringElement =
     StringElement(name, description, value, Path(path))
+
+  def apply(name: Name, description: Description, value: Any, path: PathStr): StringElement =
+    StringElement(name, description, value.toString, Path(path))
+
   def apply(value: String, path: PathStr): StringElement = StringElement(None, None, value, Path(path))
 }
 
@@ -240,6 +256,11 @@ object ObjectElement {
       description = description,
       path = path)
   }
+
+  def empty(path: PathStr): ObjectElement = ObjectElement(
+    name = None,
+    description = None,
+    path = Path(path))
 }
 
 case class ArrayElement(name: Name, description: Description, value: AnyElements = Map.empty, path: Path) extends ComplexElement { self =>
@@ -276,6 +297,11 @@ object ArrayElement extends PathExtractor {
       description = description,
       path = path)
   }
+
+  def empty(path: PathStr): ArrayElement = ArrayElement(
+    name = None,
+    description = None,
+    path = Path(path))
 }
 
 case class Ref(name: Name, description: Description, value: AnyElement, ref: Path, path: Path) extends StorageElement[AnyElement] {

@@ -10,6 +10,8 @@ package storage
 case class Storage(repr: Repr = Repr.empty) extends StorageLike {
   def apply(path: Path): AnyElement = repr(path)
 
+  def apply(path: PathStr): AnyElement = repr(Path(path))
+
   def getBoolean(path: Path): Boolean = repr(path) match {
     case x: BooleanElement => x.value
     case x: StringElement => x.value.toBoolean
@@ -65,7 +67,7 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def updateElement(path: PathStr, x: AnyElement, consistency: Consistency = Consistency.Strict): Storage = updateElement(Path(path), x, consistency)
 
-  def createElement(path: PathStr, x: AnyElement): StorageLike = createElement(Path(path), x)
+  def createElement(path: PathStr, x: AnyElement): Storage = createElement(Path(path), x)
 
   //  def addData(x: (PathStr, Value)*): StorageLike = x match {
   //    case Seq() => this
@@ -81,6 +83,10 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 }
 
 object Storage {
+  case class GetInt(path: Path)
+  case class GetString(path: Path)
+  case class GetBoolean(path: Path)
+
   def empty: Storage = Storage(Repr.empty)
   def apply(x: Map[PathStr, ReprElement]): Storage = Storage(storage.Repr(x))
   def apply(x: ReprElement*): Storage = Storage(Repr(x.map(r => r.path.pathStr -> r).toMap))

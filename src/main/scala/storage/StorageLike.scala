@@ -1,9 +1,6 @@
 package storage
 
 trait StorageLike extends Printable {
-  def apply(path: Path): AnyElement
-  def apply(path: PathStr): AnyElement = apply(Path(path))
-
   def repr: Repr
   def root: ObjectElement
 
