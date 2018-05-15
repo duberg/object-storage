@@ -3,7 +3,7 @@ package storage.actor.persistence
 import akka.actor.{ Actor, ActorRef, Props }
 import storage.actor.persistence.Persistence._
 
-trait Behaviors { _: Actor =>
+trait DefaultBehaviors { _: Actor =>
   protected var terminateOpt: Option[(ActorRef, Any)] = None
 
   def throwableBehavior: Receive = { case e: Exception => throw e }

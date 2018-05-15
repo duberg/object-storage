@@ -15,7 +15,7 @@ trait StorageElement[+T] extends Printable { self =>
     case _: AnySimpleElement @unchecked => true
     case _: ComplexElement => false
   }
-  def isArrayElement: Boolean = path.isArrayElementPath
+  def isArrayElement: Boolean = path.isArrayElement
   def isRef: Boolean = self match {
     case _: Ref => true
     case _ => false

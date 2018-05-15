@@ -87,12 +87,12 @@ object Persistence {
    * For example, if state stores ProcessInfo entities, there should be events:
    *
    * {{{
-   *  case class ProcessRuntimeState(v: Map[ProcessInstance.Id, ProcessInfo] = Map.empty)
+   *  case class ProcessRuntimeState(v: Map[ProcessInstance.PersistenceId, ProcessInfo] = Map.empty)
    *
    *  sealed trait Event extends PersistentEvent
-   *  case class CreatedProcessInfoEvt(x: UpdateProcessInfo, t: ProcessTemplate.Id) extends Event
+   *  case class CreatedProcessInfoEvt(x: UpdateProcessInfo, t: ProcessTemplate.PersistenceId) extends Event
    *  case class UpdatedProcessInfoEvt(x: UpdateProcessInfo) extends Event
-   *  case class DeletedProcessInfoEvt(id: ProcessInstance.Id) extends Event
+   *  case class DeletedProcessInfoEvt(id: ProcessInstance.PersistenceId) extends Event
    * }}}
    *
    * Follow this convention rule for Persistent event names.
@@ -115,13 +115,13 @@ object Persistence {
   trait PersistentStateActor[T <: PersistentState[T]] extends PersistentActor
     with ActorLogging
     with ActorLifecycleHooks
-    with Behaviors {
+    with DefaultBehaviors {
 
     private var recoveryOpt: Option[T] = None
     private var subscribers: Subscribers = Map.empty
 
-    def id: String
-    def persistenceId: String = id
+    def id: PersistenceId
+    def persistenceId: String = id.pathStr
 
     def initState: T
 
@@ -334,7 +334,7 @@ object Persistence {
   trait InMemoryPersistentStateActor[T <: PersistentState[T]] extends Actor
     with ActorLogging
     with ActorLifecycleHooks
-    with Behaviors {
+    with DefaultBehaviors {
 
     def id: String
     def initState: T

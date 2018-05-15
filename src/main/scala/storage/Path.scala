@@ -3,23 +3,14 @@ package storage
 import java.util.regex.Pattern
 
 import Path._
+import storage.actor.persistence.PersistenceId
 
-case class Path(elements: List[String]) {
-  lazy val name: String = elements.last
-  lazy val pathStr: PathStr = elements.mkString(Separator)
-  lazy val parent = parentOpt.getOrElse(throw StorageException("There is no parent object"))
-  lazy val parentOpt: Option[Path] = elements match {
-    case x :+ _ => Some(Path(x))
-    case _ => None
-  }
+case class Path(elements: List[String], nodeId: Option[PersistenceId] = None) extends PathLike {
+  def nodeIdStr = nodeId.get
 
-  require(elements.nonEmpty, "Require non empty path")
+  def nodeName = nodeId.get.name
 
-  def root: Path = Path(elements.head :: Nil)
-
-  def isRoot: Boolean = pathStr == "$"
-
-  def isArrayElementPath: Boolean = name match {
+  def isArrayElement: Boolean = name match {
     case ArrayElementPattern(a, b) => true
     case _ => false
   }
@@ -50,6 +41,11 @@ object Path extends PathExtractor {
   val Separator = "."
 
   def apply(path: PathStr): Path = Path(pathElements(path))
+
+  def apply(nodeId: PersistenceId, path: PathStr): Path = Path(
+    elements = pathElements(path),
+    nodeId = Some(nodeId))
+
   def root: Path = Path("$")
 }
 

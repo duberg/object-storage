@@ -2,7 +2,7 @@
 import storage._
 import storage.json._
 
-object CreateFromReprApp extends App {
+object FlatReprApp extends App {
   val storage = Storage(
     StringElement(Some("name1"), Some("desc1"), "name1", "x1"),
     ObjectMetadata(Some("name1"), Some("desc1"), "form1"),

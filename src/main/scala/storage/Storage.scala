@@ -1,5 +1,7 @@
 package storage
 
+import storage.actor.persistence.Persistence._
+
 /**
  * = Object storage =
  *
@@ -83,11 +85,31 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 }
 
 object Storage {
-  case class GetInt(path: Path)
-  case class GetString(path: Path)
-  case class GetBoolean(path: Path)
+  trait Command extends PersistentCommand {
+    def path: Path
+  }
+  trait Request extends PersistentRequest {
+    def path: Path
+  }
+  trait Response extends PersistentResponse
+  trait Event extends PersistentEvent
+
+  case class GetInt(path: Path) extends Request
+  case class GetString(path: Path) extends Request
+  case class GetBoolean(path: Path) extends Request
+  case class GetDecimal(path: Path) extends Request
+  case class GetElement(path: Path) extends Request
+
+  case class UpdateStorageCmd(storage: Storage, path: Path) extends Command
+
+  case class IntOpt(x: Option[Int]) extends Response
+  case class StringOpt(x: Option[String]) extends Response
+  case class BooleanOpt(x: Option[Boolean]) extends Response
+  case class DecimalOpt(x: Option[BigDecimal]) extends Response
+  case class ElementOpt(x: Option[AnyElement]) extends Response
 
   def empty: Storage = Storage(Repr.empty)
   def apply(x: Map[PathStr, ReprElement]): Storage = Storage(storage.Repr(x))
   def apply(x: ReprElement*): Storage = Storage(Repr(x.map(r => r.path.pathStr -> r).toMap))
 }
+

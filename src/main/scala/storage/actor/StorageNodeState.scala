@@ -10,3 +10,7 @@ case class StorageNodeState(storage: Storage) extends PersistentState[StorageNod
     case _: Persistence.PersistentEvent => this
   }
 }
+
+object StorageNodeState {
+  def empty: StorageNodeState = StorageNodeState(Storage.empty)
+}
