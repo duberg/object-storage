@@ -1,5 +1,29 @@
-# Akka persistence object storage with fast serialization
+# Akka persistence object storage with fast serialization and Expression Engine
 
+**Asynchronous Expression Engine**
+```javascript
+expr := expr '==' term | expr '!=' term | expr '>' term | expr '<' term | expr '>=' term | expr term | term
+term := expr OR term1 | expr AND term1 | term1
+term1 := expr '+' term2 | expr '-' term2 | term2
+term2 := expr '*' term3 | expr '/' term3 | term3
+term3 := '(' expr ')' | decimal_literal | string_literal | boolean_literal | identifier
+decimal_literal := regex [0-9][0-9]*[\.]?[0-9]*
+string_literal := regex
+boolean_literal := TRUE | FALSE
+```
+Bpmn expression example:
+```
+$task.firstname = secretary.firstname,
+$task.lastname = secretary.lastname,
+$task.middlename = secretary.middlename,
+$task.fullname = $task.firstname + " " + $task.lastname + " " + $task.middlename,
+$task.status = $task.fullname + " ("+ secretary.status + ")",
+$task.counter = ($task.counter + 2) * 2,
+$task.counter = ($task.counter + 2) * 2,
+$task.counter = ($task.counter + 2) * 2,
+$process.counter = $task.counter
+```
+## Storage
 **Json object**
 ```json
 {
