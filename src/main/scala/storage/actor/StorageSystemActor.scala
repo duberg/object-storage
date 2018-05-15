@@ -1,9 +1,9 @@
 package storage.actor
 
-import storage.actor.persistence.Persistence._
-import storage._
-import StorageSystemLike._
 import akka.actor.Props
+import storage.StorageSystem._
+import storage._
+import storage.actor.persistence.Persistence._
 import storage.actor.persistence.PersistenceId
 
 class StorageSystemActor(val id: PersistenceId, val initState: StorageSystemState) extends PersistentStateActor[StorageSystemState] {

@@ -1,6 +1,6 @@
 package storage.actor.utils
 
-import akka.actor.{ Actor, ActorLogging }
+import akka.actor.{Actor, ActorLogging}
 
 trait ActorLifecycleHooks { self: Actor with ActorLogging =>
   override def preStart(): Unit = log.info("Actor created")

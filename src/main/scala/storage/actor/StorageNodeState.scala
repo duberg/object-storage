@@ -1,13 +1,13 @@
 package storage.actor
 
+import storage.Storage
+import storage.Storage._
 import storage.actor.persistence.Persistence
 import storage.actor.persistence.Persistence.PersistentState
-import storage.{ Storage, StorageLike }
-import Storage._
 
 case class StorageNodeState(storage: Storage) extends PersistentState[StorageNodeState] {
   def updated(event: Persistence.PersistentEvent): StorageNodeState = event match {
-    case _: Persistence.PersistentEvent => this
+    case UpdatedDataElementEvt(x) => copy(storage.updateDataElement(x))
   }
 }
 

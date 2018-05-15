@@ -12,11 +12,11 @@ object StorageApp extends App {
   implicit val executor: ExecutionContext = system.dispatcher
   implicit val timeout: Timeout = 4.seconds
 
-  val storageId = PersistenceId(s"storage-v035")
+  val storageId = PersistenceId(s"storage-v050")
   val nodeId = PersistenceId(s"${storageId.pathStr}.node1")
 
-  val managerActor = system.actorOf(StorageSystemActor.props(storageId), storageId.name)
-  val storage = StorageSystem(managerActor)
+  val storageActor = system.actorOf(StorageSystemActor.props(storageId), storageId.name)
+  val storage = StorageSystem(storageActor)
 
   def x = CreateNode(
     id = nodeId,
@@ -51,5 +51,22 @@ object StorageExample {
     StringElement(None, None, "https://github.com/duberg/object-storage", "form1.files[1]"),
     // reference example
     RefMetadata(None, Option("Reference to parent object"), "form1.parent", "form1.parent2"),
-    BooleanElement(value = false, "isEmployee"))
+    BooleanElement(value = false, "isEmployee"),
+    ObjectMetadata(None, None, "secretary"),
+    StringElement(None, None, "Mark", "secretary.firstname"),
+    StringElement(None, None, "Duberg", "secretary.lastname"),
+    StringElement(None, None, "J.", "secretary.middlename"),
+    StringElement(None, None, "busy", "secretary.status"),
+    IntElement(None, None, 0, "counter")
+  )
+
+  // task example storage
+  val taskStorage = Storage(
+    StringElement(None, None, "", "firstname"),
+    StringElement(None, None, "", "lastname"),
+    StringElement(None, None, "", "middlename"),
+    StringElement(None, None, "", "fullname"),
+    StringElement(None, None, "", "status"),
+    IntElement(None, None, 0, "counter"),
+  )
 }

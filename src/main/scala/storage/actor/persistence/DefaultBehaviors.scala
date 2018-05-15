@@ -1,6 +1,6 @@
 package storage.actor.persistence
 
-import akka.actor.{ Actor, ActorRef, Props }
+import akka.actor.{Actor, ActorRef, Props}
 import storage.actor.persistence.Persistence._
 
 trait DefaultBehaviors { _: Actor =>

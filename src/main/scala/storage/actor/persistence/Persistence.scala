@@ -1,9 +1,9 @@
 package storage.actor.persistence
 
-import java.time.{ Instant, LocalDateTime, ZoneId }
+import java.time.{Instant, LocalDateTime, ZoneId}
 import java.util.UUID
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern.ask
 import akka.persistence._
 import akka.util.Timeout

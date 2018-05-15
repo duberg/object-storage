@@ -2,7 +2,7 @@
 import storage._
 import storage.json._
 
-object FlatReprApp extends App {
+object FlatReprExampleApp extends App {
   val storage = Storage(
     StringElement(Some("name1"), Some("desc1"), "name1", "x1"),
     ObjectMetadata(Some("name1"), Some("desc1"), "form1"),
@@ -35,7 +35,7 @@ object FlatReprApp extends App {
       "form1.data.title.ru" -> "+++",
       "form1.parent.firstname" -> "+++")
     .updateData("isEmployee" -> true)
-    .updateElement("form1.parent.middlename", StringElement(Some("name"), Some("desc"), "m", "form1.parent.middlename"))
+    .updateElement("form1.parent.middlename", StringElement(Some("path"), Some("desc"), "m", "form1.parent.middlename"))
     .updateElement("form1.parent", obj1)
 
   println(storageUpdated.asJsonStr)

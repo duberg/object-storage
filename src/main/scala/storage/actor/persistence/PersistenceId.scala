@@ -1,9 +1,9 @@
 package storage.actor.persistence
 
-import storage.{ PathExtractor, PathLike, PathStr }
+import storage.{PathExtractor, PathLike, PathStr}
 
 /**
- * Persistence id is full path to actor
+ * PersistenceId is full path to actor
  */
 case class PersistenceId(elements: List[String]) extends PathLike
 

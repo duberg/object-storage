@@ -1,8 +1,8 @@
 package storage.actor
 
+import storage.StorageSystem._
 import storage._
 import storage.actor.persistence.Persistence._
-import StorageSystemLike._
 import storage.actor.persistence.PersistenceId
 
 case class StorageSystemState(v: Map[PathStr, NodeInfo]) extends PersistentState[StorageSystemState] {

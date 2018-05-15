@@ -1,12 +1,12 @@
 package storage
 
 import akka.actor.ActorRef
-import akka.util.Timeout
-import storage._
 import akka.pattern.ask
-import Storage._
+import akka.util.Timeout
+import storage.Storage._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 trait StorageNode {
   implicit val c: ExecutionContext
@@ -59,6 +59,11 @@ trait StorageNode {
         case None => throw StorageException("Element does not exist")
       }
 
+  def getRoot(path: Path): Future[ObjectElement] =
+    ask(storageSystemActor, GetRoot(path))
+      .mapTo[Root]
+      .map(_.x)
+
   def getComplexElement(path: Path): Future[ComplexElement] = ???
   def getObjectElement(path: Path): Future[ObjectElement] = ???
   def getArrayElement(path: Path): Future[ArrayElement] = ???
@@ -73,11 +78,20 @@ trait StorageNode {
   def getDataElement(path: PathStr): Future[DataElement] = getDataElement(Path(path))
   def getData(paths: List[PathStr]): Future[Data] = getData(Paths.fromPathStrs(paths))
 
-  def updateElement(path: Path, definition: AnyElement, consistency: Consistency): Future[StorageLike] = ???
-  def updateDataElement(x: DataElement): Future[StorageLike] = ???
+  def updateElement(path: Path, x: AnyElement): Future[Storage] = ???
+
+  def updateDataElement(x: DataElement): Future[Storage] =
+    ask(storageSystemActor, UpdateDataElementCmd(x, x.path))
+      .mapTo[UpdatedStorage]
+      .map(_.x)
+      .map {
+        case Success(y) => y
+        case Failure(e) => throw StorageException("Storage update exception")
+      }
+
   def updateData(x: Data): Future[StorageLike] = ???
   def updateData(x: (PathStr, Value)*): Future[StorageLike] = ???
-  def updateElement(path: PathStr, X: AnyElement, consistency: Consistency = Consistency.Strict): Future[StorageLike] = ???
+  def updateElement(path: PathStr, x: AnyElement, consistency: Consistency = Consistency.Strict): Future[StorageLike] = ???
 
   def createElement(path: Path, x: AnyElement): Future[StorageLike] = ???
   def createElement(path: PathStr, x: AnyElement): Future[StorageLike] = ???

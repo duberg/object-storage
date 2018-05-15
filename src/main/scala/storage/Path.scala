@@ -1,8 +1,6 @@
 package storage
 
-import java.util.regex.Pattern
-
-import Path._
+import storage.Path._
 import storage.actor.persistence.PersistenceId
 
 case class Path(elements: List[String], nodeId: Option[PersistenceId] = None) extends PathLike {
@@ -29,10 +27,7 @@ case class Path(elements: List[String], nodeId: Option[PersistenceId] = None) ex
   def withArrayElementSeparator: String = s"$pathStr$ArrayElementSeparator"
 
   override def toString = pathStr
-}
-
-trait PathExtractor {
-  def pathElements(pathStr: PathStr): List[String] = pathStr.split(Pattern.quote(Separator)).toList
+  def mkString = s"nodeId: $nodeId, elements: $elements"
 }
 
 object Path extends PathExtractor {
@@ -46,7 +41,13 @@ object Path extends PathExtractor {
     elements = pathElements(path),
     nodeId = Some(nodeId))
 
+  def apply(nodeId: PersistenceId, elements: List[String]): Path = Path(
+    elements = elements,
+    nodeId = Some(nodeId))
+
   def root: Path = Path("$")
+
+  def root(nodeId: PersistenceId): Path = Path(nodeId = nodeId, path = "$")
 }
 
 case class Paths(list: List[Path]) {

@@ -1,6 +1,6 @@
 package storage
 
-import Implicits._
+import storage.Implicits._
 
 trait StorageElement[+T] extends Printable { self =>
   def name: Name

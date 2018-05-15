@@ -7,7 +7,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
       case x: RefMetadata => apply(x.ref)
       case x: Metadata => getComplexElement(x)
     }
-    case _ => throw StorageException(s"Invalid path $path")
+    case _ => throw StorageException(s"Invalid path: $path")
   }
 
   def getMetadata(path: Path): Metadata = impl.get(path.pathStr) match {
@@ -15,7 +15,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
       case metadata: Metadata => metadata
       case _ => throw StorageException(s"Metadata not found")
     }
-    case None => throw StorageException(s"Invalid path $path")
+    case None => throw StorageException(s"Invalid path: $path")
   }
 
   def getObjectMetadata(path: Path): ObjectMetadata = impl.get(path.pathStr) match {
@@ -23,7 +23,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
       case metadata: ObjectMetadata => metadata
       case _ => throw StorageException(s"Invalid metadata")
     }
-    case None => throw StorageException(s"Invalid path $path")
+    case None => throw StorageException(s"Invalid path: $path")
   }
 
   def getArrayMetadata(path: Path): ArrayMetadata = impl.get(path.pathStr) match {
@@ -31,7 +31,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
       case metadata: ArrayMetadata => metadata
       case _ => throw StorageException(s"Invalid metadata")
     }
-    case None => throw StorageException(s"Invalid path $path")
+    case None => throw StorageException(s"Invalid path: $path")
   }
 
   def getComplexElement(metadata: Metadata): ComplexElement = metadata match {
@@ -61,7 +61,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
   def updateValue(path: Path, value: Value, consistency: Consistency = Consistency.Strict): Repr = {
     consistency match {
       case Consistency.Strict =>
-        impl.getOrElse(path.pathStr, throw StorageException(s"Invalid path $path")) match {
+        impl.getOrElse(path.pathStr, throw StorageException(s"Invalid path: $path")) match {
           case x: AnySimpleElement @unchecked => copy(impl ++ x.withValue(value).repr.impl)
           case x: Metadata => throw StorageException(s"Can't update ComplexElement")
         }
@@ -71,7 +71,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
           case x: String => copy(impl + (path.pathStr -> StringElement(None, None, x, path)))
           case x: Boolean => copy(impl + (path.pathStr -> BooleanElement(None, None, x, path)))
           case x: BigDecimal => copy(impl + (path.pathStr -> DecimalElement(None, None, x, path)))
-          case x => throw StorageException(s"Invalid pathStr $x")
+          case x => throw StorageException(s"Invalid path:Str $x")
         }
     }
   }
@@ -80,7 +80,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
     consistency match {
       case Consistency.Strict =>
         // fast read from impl to check type
-        val reprElement = impl.getOrElse(path.pathStr, throw StorageException(s"Invalid path $path"))
+        val reprElement = impl.getOrElse(path.pathStr, throw StorageException(s"Invalid path: $path"))
         checkType(path.pathStr, reprElement, definition)
         reprElement match {
           case _: AnySimpleElement @unchecked =>
@@ -104,7 +104,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
                 // update impl
                 val zImpl = (xImpl /: yImpl)({
                   case (accImpl, (yReprPath, yReprElement)) =>
-                    val xReprElement = accImpl.getOrElse(yReprPath, throw StorageException(s"Invalid path $yReprPath"))
+                    val xReprElement = accImpl.getOrElse(yReprPath, throw StorageException(s"Invalid path: $yReprPath"))
                     checkType(yReprPath, xReprElement, yReprElement)
                     xReprElement match {
                       case _: AnySimpleElement @unchecked =>
@@ -132,7 +132,7 @@ case class Repr(impl: Map[PathStr, ReprElement]) extends TypeChecker {
                 // update impl
                 val zImpl = (xImpl /: yImpl)({
                   case (accImpl, (yReprPath, yReprElement)) =>
-                    val xReprElement = accImpl.getOrElse(yReprPath, throw StorageException(s"Invalid path $yReprPath"))
+                    val xReprElement = accImpl.getOrElse(yReprPath, throw StorageException(s"Invalid path: $yReprPath"))
                     checkType(yReprPath, xReprElement, yReprElement)
                     xReprElement match {
                       case _: AnySimpleElement @unchecked =>

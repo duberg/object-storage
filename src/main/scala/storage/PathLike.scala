@@ -15,6 +15,8 @@ trait PathLike {
 
   require(elements.nonEmpty, "Require non empty path")
 
+  def head = elements.head
+  def tail = elements.tail
   def root: Path = Path(elements.head :: Nil)
   def isRoot: Boolean = pathStr == "$"
 }

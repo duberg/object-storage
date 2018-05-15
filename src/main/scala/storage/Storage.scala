@@ -2,6 +2,8 @@ package storage
 
 import storage.actor.persistence.Persistence._
 
+import scala.util.Try
+
 /**
  * = Object storage =
  *
@@ -71,10 +73,10 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def createElement(path: PathStr, x: AnyElement): Storage = createElement(Path(path), x)
 
-  //  def addData(x: (PathStr, Value)*): StorageLike = x match {
+  //  def addData(createProcessNode: (PathStr, Value)*): StorageLike = createProcessNode match {
   //    case Seq() => this
   //    case Seq((path, value)) => addDataElement(DataElement(path, value))
-  //    case Seq(a, as @ _*) => addData(Data(x.toMap))
+  //    case Seq(a, as @ _*) => addData(Data(createProcessNode.toMap))
   //  }
   //
   //  repr.impl.foreach({
@@ -99,14 +101,20 @@ object Storage {
   case class GetBoolean(path: Path) extends Request
   case class GetDecimal(path: Path) extends Request
   case class GetElement(path: Path) extends Request
+  case class GetRoot(path: Path) extends Request
 
   case class UpdateStorageCmd(storage: Storage, path: Path) extends Command
+  case class UpdateDataElementCmd(x: DataElement, path: Path) extends Command
+
+  case class UpdatedDataElementEvt(x: DataElement) extends Event
 
   case class IntOpt(x: Option[Int]) extends Response
   case class StringOpt(x: Option[String]) extends Response
   case class BooleanOpt(x: Option[Boolean]) extends Response
   case class DecimalOpt(x: Option[BigDecimal]) extends Response
   case class ElementOpt(x: Option[AnyElement]) extends Response
+  case class Root(x: ObjectElement) extends Response
+  case class UpdatedStorage(x: Try[Storage]) extends Response
 
   def empty: Storage = Storage(Repr.empty)
   def apply(x: Map[PathStr, ReprElement]): Storage = Storage(storage.Repr(x))
