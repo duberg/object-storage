@@ -1,9 +1,9 @@
 package storage.lang
 
 import akka.util.Timeout
-import storage.{AnySimpleElement, PathStr}
+import storage._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait Expression {
   def eval(implicit ctx: EvaluatorContext, c: ExecutionContext, t: Timeout): Future[Any]
@@ -141,11 +141,13 @@ case class False() extends Literal {
   def eval(implicit ctx: EvaluatorContext, c: ExecutionContext, t: Timeout) = Future.successful(false)
 }
 
-case class Variable(path: PathStr) extends Expression with PathMapper {
-  def eval(implicit ctx: EvaluatorContext, c: ExecutionContext, t: Timeout) = ctx.storage.getElement(resolve(path)) map {
-    case x: AnySimpleElement => x.value
-    case x => x
-  }
+case class Variable(path: PathStr) extends Expression with NodePathMapper {
+  def eval(implicit ctx: EvaluatorContext, c: ExecutionContext, t: Timeout) =
+    ctx.storage.getElement(resolve(path)).map {
+      case x: AnySimpleElement => x.value
+      case x: ComplexElement => x
+    }
+
   def getVars = Set(path)
 }
 

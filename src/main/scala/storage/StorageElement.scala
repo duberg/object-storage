@@ -2,24 +2,32 @@ package storage
 
 import storage.Implicits._
 
-trait StorageElement[+T] extends Printable { self =>
+trait StorageElementLike { self =>
   def name: Name
   def description: Description
-  def value: T
+  def value: Value
   def path: Path
   def repr: Repr
-  def withValue(value: Value): AnyElement
-  def withDescription(description: Description): AnyElement
-  def withPath(path: Path): AnyElement
-  def isSimple: Boolean = self match {
+  def withValue(value: Value): StorageElementLike
+  def withName(name: Name): StorageElementLike
+  def withDescription(description: Description): StorageElementLike
+  def withPath(path: Path): StorageElementLike
+  def isSimple: Boolean = this match {
     case _: AnySimpleElement @unchecked => true
     case _: ComplexElement => false
   }
   def isArrayElement: Boolean = path.isArrayElement
-  def isRef: Boolean = self match {
+  def isRef: Boolean = this match {
     case _: Ref => true
     case _ => false
   }
+}
+
+trait StorageElement[+T <: Value] extends StorageElementLike with Printable {
+  def value: T
+  def withValue(value: Value): AnyElement
+  def withDescription(description: Description): AnyElement
+  def withPath(path: Path): AnyElement
 }
 
 trait SimpleElement[+T] extends StorageElement[T] with ReprElement { self =>
@@ -139,6 +147,7 @@ class ComplexElementFactory(repr: Repr) extends PathExtractor {
 
 case class BooleanElement(name: Name, description: Description, value: Boolean, path: Path) extends SimpleElement[Boolean] { self =>
   def withValue(x: Value) = copy(value = convert(x, path))
+  def withName(x: Name) = copy(name = x)
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path) = copy(path = path)
   def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value, path))
@@ -158,6 +167,7 @@ object BooleanElement {
 
 case class IntElement(name: Name, description: Description, value: Int, path: Path) extends SimpleElement[Int] { self =>
   def withValue(x: Value) = copy(value = convert(x, path))
+  def withName(x: Name) = copy(name = x)
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path) = copy(path = path)
   def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value, path))
@@ -177,6 +187,7 @@ object IntElement {
 
 case class DecimalElement(name: Name, description: Description, value: BigDecimal, path: Path) extends SimpleElement[BigDecimal] { self =>
   def withValue(x: Value) = copy(value = convert(x, path))
+  def withName(x: Name) = copy(name = x)
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path) = copy(path = path)
   def updated(name: Name, description: Description, value: Value) = copy(name, description, convert(value, path))
@@ -196,6 +207,7 @@ object DecimalElement {
 
 case class StringElement(name: Name, description: Description, value: String, path: Path) extends SimpleElement[String] { self =>
   def withValue(x: Value) = copy(value = x.toString)
+  def withName(x: Name) = copy(name = x)
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path) = copy(path = path)
   def updated(name: Name, description: Description, value: Value) = copy(name, description, value.toString)
@@ -220,6 +232,7 @@ case class ObjectElement(name: Name, description: Description, value: AnyElement
   }
   def withValue(value: AnyElements): ObjectElement = ???
   def withValue(value: Value): ObjectElement = ???
+  def withName(x: Name) = copy(name = x)
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path): ObjectElement = {
     copy(
@@ -270,6 +283,7 @@ case class ArrayElement(name: Name, description: Description, value: AnyElements
   }
   def withValue(value: AnyElements): ArrayElement = ???
   def withValue(value: Value): ObjectElement = ???
+  def withName(x: Name) = copy(name = x)
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path): ArrayElement = {
     copy(
@@ -314,6 +328,7 @@ case class Ref(name: Name, description: Description, value: AnyElement, ref: Pat
 
   def withValue(value: AnyElements) = ???
   def withValue(value: Value) = ???
+  def withName(x: Name) = copy(name = x)
   def withDescription(description: Description) = copy(description = description)
   def withPath(path: Path) = copy(value = value.withPath(path), path = path)
   def withRef(path: Path) = copy(ref = path)

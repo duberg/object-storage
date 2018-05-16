@@ -18,10 +18,15 @@ $task.lastname = secretary.lastname,
 $task.middlename = secretary.middlename,
 $task.fullname = $task.firstname + " " + $task.lastname + " " + $task.middlename,
 $task.status = $task.fullname + " ("+ secretary.status + ")",
+
 $task.counter = ($task.counter + 2) * 2,
 $task.counter = ($task.counter + 2) * 2,
 $task.counter = ($task.counter + 2) * 2,
-$process.counter = $task.counter
+$process.counter = $task.counter,
+$project.counter = $process.counter + 1,
+$task.counter = "4", // value conversion
+
+$project.manager = secretary // object import
 ```
 ## Storage
 **Json object**

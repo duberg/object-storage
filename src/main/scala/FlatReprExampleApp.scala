@@ -50,8 +50,8 @@ object FlatReprExampleApp extends App {
   // .createElement(StringElement("newfile", None, "", "newfile"))
 
   val newStorage = Storage.empty
-    .createElement("x", storageUpdated("form1.parent")) // add object element
-    .createElement("x.form1.parent.y", storageUpdated("x1")) // add simple element
+    .createElement("nodeId", storageUpdated("form1.parent")) // add object element
+    .createElement("nodeId.form1.parent.y", storageUpdated("x1")) // add simple element
     .createElement(storageUpdated("form1")) // add object element to root
     .createElement(storageUpdated("x1")) // add to root
   //.updateElement("form1.files", updatedFiles)

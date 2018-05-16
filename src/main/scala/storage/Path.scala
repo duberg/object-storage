@@ -2,12 +2,9 @@ package storage
 
 import storage.Path._
 import storage.actor.persistence.PersistenceId
+import storage.lang.EvaluatorContext
 
-case class Path(elements: List[String], nodeId: Option[PersistenceId] = None) extends PathLike {
-  def nodeIdStr = nodeId.get
-
-  def nodeName = nodeId.get.name
-
+case class Path(elements: List[String]) extends PathLike {
   def isArrayElement: Boolean = name match {
     case ArrayElementPattern(a, b) => true
     case _ => false
@@ -25,9 +22,6 @@ case class Path(elements: List[String], nodeId: Option[PersistenceId] = None) ex
   def withSeparator: String = s"$pathStr$Separator"
 
   def withArrayElementSeparator: String = s"$pathStr$ArrayElementSeparator"
-
-  override def toString = pathStr
-  def mkString = s"nodeId: $nodeId, elements: $elements"
 }
 
 object Path extends PathExtractor {
@@ -37,17 +31,37 @@ object Path extends PathExtractor {
 
   def apply(path: PathStr): Path = Path(pathElements(path))
 
-  def apply(nodeId: PersistenceId, path: PathStr): Path = Path(
-    elements = pathElements(path),
-    nodeId = Some(nodeId))
-
-  def apply(nodeId: PersistenceId, elements: List[String]): Path = Path(
-    elements = elements,
-    nodeId = Some(nodeId))
+  //  def apply(nodeId: PersistenceId, path: PathStr): Path = Path(
+  //    elements = pathElements(path),
+  //    nodeIdOpt = Some(nodeId))
+  //
+  //  def apply(nodeId: PersistenceId, elements: List[String]): Path = Path(
+  //    elements = elements,
+  //    nodeIdOpt = Some(nodeId))
 
   def root: Path = Path("$")
+}
 
-  def root(nodeId: PersistenceId): Path = Path(nodeId = nodeId, path = "$")
+case class NodePath(nodeId: PersistenceId, path: Path) extends PathLike {
+  def elements = nodeId.elements ++ path.elements
+}
+
+object NodePath {
+  def apply(nodePath: NodePathStr): NodePath = {
+    val elements = pathElements(nodePath)
+    NodePath(
+      nodeId = PersistenceId(elements.take(2)),
+      path = Path(elements.tail.tail))
+  }
+  def root(nodeId: PersistenceId): NodePath = NodePath(nodeId, Path.root)
+}
+
+trait NodePathMapper extends PathExtractor {
+  def resolve(p: NodePathStr)(implicit ctx: EvaluatorContext): NodePath = {
+    val elements = pathElements(p)
+    if (elements.head contains "$") NodePath(nodeId = ctx.mappings(elements.head), path = Path(elements.tail))
+    else NodePath(nodeId = ctx.mappings("$"), path = Path(elements))
+  }
 }
 
 case class Paths(list: List[Path]) {

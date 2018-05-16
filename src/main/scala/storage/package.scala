@@ -5,6 +5,8 @@ package object storage {
   type Description = Option[String]
   type Value = Any
   type PathStr = String
+  type NodePathStr = String
+  type ScopePathStr = String
   type AnySimpleElement = SimpleElement[Value]
   type AnyElement = StorageElement[Value]
   type AnyElements = Map[PathStr, AnyElement]

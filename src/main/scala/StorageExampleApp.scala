@@ -12,7 +12,7 @@ object StorageApp extends App {
   implicit val executor: ExecutionContext = system.dispatcher
   implicit val timeout: Timeout = 4.seconds
 
-  val storageId = PersistenceId(s"storage-v050")
+  val storageId = PersistenceId(s"storage-ex-v062")
   val nodeId = PersistenceId(s"${storageId.pathStr}.node1")
 
   val storageActor = system.actorOf(StorageSystemActor.props(storageId), storageId.name)
@@ -26,7 +26,7 @@ object StorageApp extends App {
 
   for {
     x <- storage.createNode(x).recover({ case _ => nodeId })
-    y <- storage.getElement(Path(nodeId, "form1"))
+    y <- storage.getElement(NodePath(nodeId, Path("form1")))
   } yield system.terminate().map(_ => println(y.prettify))
 }
 
@@ -53,11 +53,11 @@ object StorageExample {
     RefMetadata(None, Option("Reference to parent object"), "form1.parent", "form1.parent2"),
     BooleanElement(value = false, "isEmployee"),
     ObjectMetadata(None, None, "secretary"),
-    StringElement(None, None, "Mark", "secretary.firstname"),
-    StringElement(None, None, "Duberg", "secretary.lastname"),
-    StringElement(None, None, "J.", "secretary.middlename"),
-    StringElement(None, None, "busy", "secretary.status"),
-    IntElement(None, None, 0, "counter")
+    StringElement(None, Some("desc"), "Mark", "secretary.firstname"),
+    StringElement(None, Some("desc"), "Duberg", "secretary.lastname"),
+    StringElement(None, Some("desc"), "J.", "secretary.middlename"),
+    StringElement(None, Some("desc"), "busy", "secretary.status"),
+    IntElement(None, Some("counter example"), 0, "counter")
   )
 
   // task example storage
@@ -68,5 +68,15 @@ object StorageExample {
     StringElement(None, None, "", "fullname"),
     StringElement(None, None, "", "status"),
     IntElement(None, None, 0, "counter"),
+  )
+
+  // project example storage
+  val projectStorage = Storage(
+    ObjectMetadata(None, None, "manager"),
+    StringElement(None, None, "", "manager.firstname"),
+    StringElement(None, None, "", "manager.lastname"),
+    StringElement(None, None, "", "manager.middlename"),
+    StringElement(None, None, "", "manager.status"),
+    IntElement(None, None, 0, "counter")
   )
 }

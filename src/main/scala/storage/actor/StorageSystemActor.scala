@@ -18,22 +18,11 @@ class StorageSystemActor(val id: PersistenceId, val initState: StorageSystemStat
     } else sender() ! NodeIdOpt(None)
   }
 
-  def findNodeInfoById(state: StorageSystemState, nodeId: PersistenceId): Unit = sender() ! NodeInfoOpt(state.getNodeInfoOpt(nodeId))
-
-  def findNodeInfoAll(state: StorageSystemState): Unit = sender() ! NodeInfoMap(state.getNodeInfoAll)
-
-  def findNodeStatus(state: StorageSystemState, nodeId: PersistenceId): Unit = sender() ! NodeStatusOpt(state.getNodeInfoOpt(nodeId).map(_.status))
-
-  def forwardRequest(x: Storage.Request): Unit = context.child(x.path.nodeName).get forward x
-
-  def forwardCommand(x: Storage.Command): Unit = context.child(x.path.nodeName).get forward x
-
   def behavior(state: StorageSystemState) = {
-    case x: Storage.Request => forwardRequest(x)
-    case x: Storage.Command => forwardCommand(x)
-    case GetNodeInfoById(x) => findNodeInfoById(state, x)
-    case GetNodeInfoAll => findNodeInfoAll(state)
-    case GetNodeStatus(x) => findNodeStatus(state, x)
+    case GetNodeRef(x) => sender() ! NodeRefOpt(context.child(x.name))
+    case GetNodeInfoById(x) => sender() ! NodeInfoOpt(state.getNodeInfoOpt(x))
+    case GetNodeInfoAll => sender() ! NodeInfoMap(state.getNodeInfoAll)
+    case GetNodeStatus(x) => sender() ! NodeStatusOpt(state.getNodeInfoOpt(x).map(_.status))
     case CreateNodeCmd(x) => createNode(state, x)
   }
 

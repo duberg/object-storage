@@ -1,9 +1,11 @@
 package storage.lang
 
+import akka.event.LoggingAdapter
 import akka.util.Timeout
 import storage._
+import storage.actor.persistence.PersistenceId
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  * = Expression evaluator =
@@ -23,21 +25,46 @@ import scala.concurrent.{ExecutionContext, Future}
  *  $form.fullname = $form.firstname + $form.lastname + $form.middlename
  *  $form.counter = ($form.counter + 2) * 2
  */
-trait Evaluator extends PathMapper {
+trait Evaluator extends NodePathMapper {
   implicit def ctx: EvaluatorContext
   implicit def executor: ExecutionContext
   implicit def timeout: Timeout
+  implicit val log: LoggingAdapter
 
-  def eval(assignments: Assignments) = {
-    def evalAssignment(path: PathStr, expr: Expression): Future[Storage] = expr.eval flatMap {
-      case x: AnyElement => ctx.storage.updateElement(resolve(path), x)
-      case x => ctx.storage.updateDataElement(DataElement(resolve(path), x))
-    }
-    def evalAssignments: List[Storage => Future[Storage]] = assignments map {
-      case Assignment(path, expr) => (storage: Storage) => evalAssignment(path, expr)
-    }
-    evalAssignments.foldLeft(Future.successful(Storage.empty)) {
-      case (f, evalAssignment) => f.flatMap(evalAssignment(_))
+  // Function that returns Future
+  private type FUNC = Set[PersistenceId] => Future[Set[PersistenceId]]
+  private def func(assignment: Assignment): FUNC = (nodeIds: Set[PersistenceId]) => eval(assignment).map(nodeIds ++ _)
+  private def funcs(assignments: Assignments): List[FUNC] = assignments map func
+
+  def eval(assignment: Assignment): Future[Set[PersistenceId]] = assignment.expr.eval flatMap {
+    case element: ComplexElement =>
+      val nodePath = resolve(assignment.path)
+      val nodeId = nodePath.nodeId
+      val path = nodePath.path
+
+      val dataElements = element
+        .withPath(path)
+        .repr
+        .withoutMetadata
+        .impl.values
+        .map { x => DataElement(x.path, x.value, Some(nodeId)) }
+        .toSet
+
+      val data = Data(dataElements)
+
+      ctx.storage.updateData(data)
+    case x =>
+      ctx.storage.updateDataElement(DataElement(resolve(assignment.path), x)).map(Set(_))
+  }
+
+  def eval(assignments: Assignments): Future[Set[PersistenceId]] = {
+    funcs(assignments).foldLeft(Future.successful(Set[PersistenceId]())) {
+      case (f1, f2) => f1.flatMap(f2(_)).recover {
+        case e: Exception =>
+          log.error(e.getMessage)
+          e.printStackTrace()
+          throw e
+      }
     }
   }
 }

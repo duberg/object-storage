@@ -8,6 +8,8 @@ import storage.actor.persistence.Persistence.PersistentState
 case class StorageNodeState(storage: Storage) extends PersistentState[StorageNodeState] {
   def updated(event: Persistence.PersistentEvent): StorageNodeState = event match {
     case UpdatedDataElementEvt(x) => copy(storage.updateDataElement(x))
+    case UpdatedDataEvt(x) => copy(storage.updateData(x))
+    case UpdatedElementEvt(x, y) => copy(storage.updateElement(x, y))
   }
 }
 

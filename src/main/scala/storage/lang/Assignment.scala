@@ -1,5 +1,3 @@
 package storage.lang
 
-import storage.PathStr
-
-case class Assignment(path: PathStr, expr: Expression)
+case class Assignment(path: String, expr: Expression)

@@ -1,9 +1,9 @@
 package storage.actor.persistence
 
-import java.time.{Instant, LocalDateTime, ZoneId}
+import java.time.{ Instant, LocalDateTime, ZoneId }
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
 import akka.pattern.ask
 import akka.persistence._
 import akka.util.Timeout
@@ -90,8 +90,8 @@ object Persistence {
    *  case class ProcessRuntimeState(v: Map[ProcessInstance.PersistenceId, ProcessInfo] = Map.empty)
    *
    *  sealed trait Event extends PersistentEvent
-   *  case class CreatedProcessInfoEvt(x: UpdateProcessInfo, t: ProcessTemplate.PersistenceId) extends Event
-   *  case class UpdatedProcessInfoEvt(x: UpdateProcessInfo) extends Event
+   *  case class CreatedProcessInfoEvt(nodeId: UpdateProcessInfo, t: ProcessTemplate.PersistenceId) extends Event
+   *  case class UpdatedProcessInfoEvt(nodeId: UpdateProcessInfo) extends Event
    *  case class DeletedProcessInfoEvt(id: ProcessInstance.PersistenceId) extends Event
    * }}}
    *

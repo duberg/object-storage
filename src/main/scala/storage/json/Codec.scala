@@ -27,8 +27,8 @@ trait Codec {
     case x: Metadata => x.asJson
   }
 
-  //  implicit val encodeReprElements: Encoder[ReprElements] = (x: ReprElements) => Json.obj(
-  //    x.mapValues(_.asJson).toSeq: _*)
+  //  implicit val encodeReprElements: Encoder[ReprElements] = (nodeId: ReprElements) => Json.obj(
+  //    nodeId.mapValues(_.asJson).toSeq: _*)
 
   implicit val encodeAnyElements: Encoder[AnyElements] = (x: AnyElements) => Json.obj(
     x.mapValues(_.asJson).toSeq: _*)
@@ -41,7 +41,7 @@ trait Codec {
   }
 
   //  implicit val decodeRepr: Decoder[Repr] =
-  //    (c: HCursor) => for (x <- c.downField("impl").as[ReprElements]) yield Repr(x)
+  //    (c: HCursor) => for (nodeId <- c.downField("impl").as[ReprElements]) yield Repr(nodeId)
 
   //  implicit val decodeRepr: Decoder[Repr] = Decoder.decodeMapLike(
   //    dk = decodeKeyPath,
@@ -146,7 +146,7 @@ trait Codec {
   }
 
   implicit val encodeAnySimpleElement: Encoder[AnySimpleElement] = (x: AnySimpleElement) => {
-    //    val typeName = x match {
+    //    val typeName = nodeId match {
     //      case _: StringElement => StringElement.typeName.asJson
     //      case _: IntElement => IntElement.typeName.asJson
     //      case _: BooleanElement => BooleanElement.typeName.asJson
@@ -210,7 +210,7 @@ trait Codec {
       case x if x.isString => x.as[String]
       case x if x.isObject =>
         val c = x.hcursor
-        // decodeAnyElement(x.hcursor)
+        // decodeAnyElement(nodeId.hcursor)
         x.as[Map[String, Any]](Decoder.decodeMapLike(KeyDecoder.decodeKeyString, decodeAny, Map.canBuildFrom))
       case x if x.isArray =>
         x.as[Map[String, Any]](Decoder.decodeMapLike(KeyDecoder.decodeKeyString, decodeAny, Map.canBuildFrom))

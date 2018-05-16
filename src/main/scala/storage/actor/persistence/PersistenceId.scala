@@ -1,6 +1,6 @@
 package storage.actor.persistence
 
-import storage.{PathExtractor, PathLike, PathStr}
+import storage.{ PathExtractor, PathLike, PathStr }
 
 /**
  * PersistenceId is full path to actor

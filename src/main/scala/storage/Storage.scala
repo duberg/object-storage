@@ -1,6 +1,8 @@
 package storage
 
+import akka.actor.ActorRef
 import storage.actor.persistence.Persistence._
+import storage.actor.persistence.PersistenceId
 
 import scala.util.Try
 
@@ -49,7 +51,7 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def getData(paths: Paths): Data = Data(paths.map(path => DataElement(path, apply(path).value)).toSet)
 
-  def updateElement(path: Path, x: AnyElement, consistency: Consistency): Storage = copy(repr.updateElement(path, x, consistency))
+  def updateElement(path: Path, x: AnyElement): Storage = copy(repr.updateElement(path, x))
 
   def updateDataElement(x: DataElement): Storage = copy(repr.updateValue(x.path, x.value))
 
@@ -69,7 +71,7 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 
   def prettify: String = s"[${getClass.getSimpleName}]".yellow + root.prettify
 
-  def updateElement(path: PathStr, x: AnyElement, consistency: Consistency = Consistency.Strict): Storage = updateElement(Path(path), x, consistency)
+  def updateElement(path: PathStr, x: AnyElement): Storage = updateElement(Path(path), x)
 
   def createElement(path: PathStr, x: AnyElement): Storage = createElement(Path(path), x)
 
@@ -87,12 +89,8 @@ case class Storage(repr: Repr = Repr.empty) extends StorageLike {
 }
 
 object Storage {
-  trait Command extends PersistentCommand {
-    def path: Path
-  }
-  trait Request extends PersistentRequest {
-    def path: Path
-  }
+  trait Command extends PersistentCommand
+  trait Request extends PersistentRequest
   trait Response extends PersistentResponse
   trait Event extends PersistentEvent
 
@@ -103,10 +101,13 @@ object Storage {
   case class GetElement(path: Path) extends Request
   case class GetRoot(path: Path) extends Request
 
-  case class UpdateStorageCmd(storage: Storage, path: Path) extends Command
-  case class UpdateDataElementCmd(x: DataElement, path: Path) extends Command
+  case class UpdateDataElementCmd(x: DataElement) extends Command
+  case class UpdateDataCmd(x: Data) extends Command
+  case class UpdateElementCmd(path: Path, x: AnyElement) extends Command
 
   case class UpdatedDataElementEvt(x: DataElement) extends Event
+  case class UpdatedDataEvt(x: Data) extends Event
+  case class UpdatedElementEvt(path: Path, x: AnyElement) extends Event
 
   case class IntOpt(x: Option[Int]) extends Response
   case class StringOpt(x: Option[String]) extends Response
@@ -114,7 +115,7 @@ object Storage {
   case class DecimalOpt(x: Option[BigDecimal]) extends Response
   case class ElementOpt(x: Option[AnyElement]) extends Response
   case class Root(x: ObjectElement) extends Response
-  case class UpdatedStorage(x: Try[Storage]) extends Response
+  case class NodeUpdated(nodeId: Try[PersistenceId]) extends Response
 
   def empty: Storage = Storage(Repr.empty)
   def apply(x: Map[PathStr, ReprElement]): Storage = Storage(storage.Repr(x))

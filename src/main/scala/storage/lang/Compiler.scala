@@ -1,6 +1,6 @@
 package storage.lang
 
-import scala.util.parsing.combinator.{PackratParsers, RegexParsers}
+import scala.util.parsing.combinator.{ PackratParsers, RegexParsers }
 import scala.util.parsing.input.CharSequenceReader
 
 /**
